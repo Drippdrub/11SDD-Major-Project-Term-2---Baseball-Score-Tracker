@@ -64,9 +64,8 @@ def teamInfoSetup():
     entries1 = []
     entries2 = []
 
-    tLT1 = ctk.CTkFrame(teamLineups, fg_color="#b00b13")
-    tLT2 = ctk.CTkFrame(teamLineups, fg_color="#4cab42")
-    blankFrame = ctk.CTkFrame(teamLineups, fg_color="#4c42b0")
+    tLT1 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
+    tLT2 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
 
     tLT1.columnconfigure(0, weight=1)
     tLT1.columnconfigure(1, weight=1)
@@ -120,7 +119,7 @@ def teamInfoSetup():
     tLT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     tLStartGame = ctk.CTkButton(teamLineups, text="Start", command=lambda: changeScreen(gameScreen))
-    tLStartGame.place(relx=.5, rely=.5, anchor=tk.CENTER)
+    tLStartGame.pack(pady=(app.winfo_height()/2 - 40), anchor=tk.CENTER)
 
 
 
