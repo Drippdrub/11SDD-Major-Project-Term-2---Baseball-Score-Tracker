@@ -62,9 +62,11 @@ def teamInfoSetup():
 
     global entries1 
     entries1 = []
+    entries2 = []
 
     tLT1 = ctk.CTkFrame(teamLineups, fg_color="#b00b13")
     tLT2 = ctk.CTkFrame(teamLineups, fg_color="#4cab42")
+    blankFrame = ctk.CTkFrame(teamLineups, fg_color="#4c42b0")
 
     tLT1.columnconfigure(0, weight=1)
     tLT1.columnconfigure(1, weight=1)
@@ -73,6 +75,11 @@ def teamInfoSetup():
     T1Text = ctk.CTkLabel(tLT1, text="Team 1", font=fontH2)
     T1Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
                 pady=15)
+    T2Text = ctk.CTkLabel(tLT2, text="Team 2", font=fontH2)
+    T2Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
+                pady=15)
+    
+
     Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=fontB2)
     Name1Lbl.grid(row=1, column=0, sticky=tk.E,
                 padx=10, pady=15)
@@ -88,17 +95,32 @@ def teamInfoSetup():
                     padx=40, pady=15)
         entries1.append(P1NameEnt)
 
-    T2Text = ctk.CTkLabel(tLT2, text="Team 2", font=fontH2)
-    T2Text.pack()
+    tLT2.columnconfigure(0, weight=1)
+    tLT2.columnconfigure(1, weight=1)
+    tLT2.columnconfigure(2, weight=1)
 
-    T2Name = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, width=350, height=50)
-    T2Name.pack()
+    Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=fontB2)
+    Name2Lbl.grid(row=1, column=0, sticky=tk.E,
+                padx=10, pady=15)
+    Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, height=50)
+    Name2Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
+                padx=40, pady=15)
+    for i in range(6):
+        PlayerName = ctk.CTkLabel(tLT2, text=f"Player {i+1} Name:", font=fontB2)
+        PlayerName.grid(row=i+2, column=0, sticky=tk.E,
+                        padx=10, pady=15)
+        P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=fontB1, height=50)
+        P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
+                    padx=40, pady=15)
+        entries2.append(P2NameEnt)
+
+
 
     tLT1.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
     tLT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
     tLStartGame = ctk.CTkButton(teamLineups, text="Start", command=lambda: changeScreen(gameScreen))
-    tLStartGame.pack(anchor=tk.CENTER)
+    tLStartGame.place(relx=.5, rely=.5, anchor=tk.CENTER)
 
 
 
