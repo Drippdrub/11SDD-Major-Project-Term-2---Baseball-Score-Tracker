@@ -64,8 +64,8 @@ def teamInfoSetup():
     entries1 = []
     entries2 = []
 
-    tLT1 = ctk.CTkFrame(teamLineups, fg_color="#b00b13")
-    tLT2 = ctk.CTkFrame(teamLineups, fg_color="#4cab42")
+    tLT1 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
+    tLT2 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
 
     tLT1.columnconfigure(0, weight=1)
     tLT1.columnconfigure(1, weight=1)
@@ -81,17 +81,17 @@ def teamInfoSetup():
 
     Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=fontB2)
     Name1Lbl.grid(row=1, column=0, sticky=tk.E,
-                padx=25, pady=15)
+                padx=10, pady=15)
     Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="TEAM 1", font=fontB1, height=50)
     Name1Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
-                padx=25, pady=15)
+                padx=40, pady=15)
     for i in range(6):
         PlayerName = ctk.CTkLabel(tLT1, text=f"Player {i+1} Name:", font=fontB2)
         PlayerName.grid(row=i+2, column=0, sticky=tk.E,
-                        padx=25, pady=15)
+                        padx=10, pady=15)
         P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=fontB1, height=50)
         P1NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
-                    padx=25, pady=15)
+                    padx=40, pady=15)
         entries1.append(P1NameEnt)
 
     tLT2.columnconfigure(0, weight=1)
@@ -100,17 +100,17 @@ def teamInfoSetup():
 
     Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=fontB2)
     Name2Lbl.grid(row=1, column=0, sticky=tk.E,
-                padx=25, pady=15)
+                padx=10, pady=15)
     Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, height=50)
     Name2Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
-                padx=25, pady=15)
+                padx=40, pady=15)
     for i in range(6):
         PlayerName = ctk.CTkLabel(tLT2, text=f"Player {i+1} Name:", font=fontB2)
         PlayerName.grid(row=i+2, column=0, sticky=tk.E,
-                        padx=25, pady=15)
+                        padx=10, pady=15)
         P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=fontB1, height=50)
         P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
-                    padx=25, pady=15)
+                    padx=40, pady=15)
         entries2.append(P2NameEnt)
 
 
