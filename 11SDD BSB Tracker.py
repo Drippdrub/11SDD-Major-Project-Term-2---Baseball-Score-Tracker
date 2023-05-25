@@ -11,6 +11,7 @@ app = ctk.CTk(fg_color=bgClr)
 app.geometry("1280x720")
 app.resizable(width=False, height=False)
 app.iconbitmap("ball_icon.ico")
+app.title("Baseball Scoring System")
 
 # set fonts
 fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
