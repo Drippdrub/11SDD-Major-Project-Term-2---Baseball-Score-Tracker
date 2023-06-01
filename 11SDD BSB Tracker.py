@@ -10,7 +10,7 @@ bgClr = "#121212"
 app = ctk.CTk(fg_color=bgClr)
 app.geometry("1280x720")
 app.resizable(width=False, height=False)
-app.iconbitmap("ball_icon.ico")
+app.iconbitmap("Assets/ball_icon.ico")
 app.title("Baseball Scoring System")
 
 # set fonts
@@ -36,7 +36,7 @@ mainMenu = ctk.CTkFrame(app, fg_color=bgClr)
 teamLineups = ctk.CTkFrame(app, fg_color=bgClr)
 gameScreen = ctk.CTkFrame(app, fg_color=bgClr)
 
-# main menu frame
+# main menu screen
 def mainMenuSetup():
     MMFrame = ctk.CTkFrame(mainMenu, fg_color=bgClr)
 # title
@@ -54,7 +54,7 @@ def mainMenuSetup():
     MMFrame.pack(padx=50, side=tk.LEFT)
 
 # main menu image
-    MMImage = ctk.CTkImage(dark_image=Image.open("Baseball.png"), size=(400, 400))
+    MMImage = ctk.CTkImage(dark_image=Image.open("Assets/Baseball.png"), size=(400, 400))
     MMImgObj = ctk.CTkLabel(mainMenu, image=MMImage, text="")
     MMImgObj.pack(padx=50, side=tk.RIGHT)
 
@@ -74,25 +74,25 @@ def teamInfoSetup():
 
     T1Text = ctk.CTkLabel(tLT1, text="Team 1", font=fontH2)
     T1Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
-                pady=15)
+                pady=10)
     T2Text = ctk.CTkLabel(tLT2, text="Team 2", font=fontH2)
     T2Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
-                pady=15)
+                pady=10)
     
 
     Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=fontB2)
     Name1Lbl.grid(row=1, column=0, sticky=tk.E,
-                padx=10, pady=15)
-    Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="TEAM 1", font=fontB1, height=50)
+                padx=10, pady=10)
+    Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="TEAM 1", font=fontB1, height=40)
     Name1Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
-                padx=40, pady=15)
-    for i in range(6):
+                padx=40, pady=10)
+    for i in range(9):
         PlayerName = ctk.CTkLabel(tLT1, text=f"Player {i+1} Name:", font=fontB2)
         PlayerName.grid(row=i+2, column=0, sticky=tk.E,
-                        padx=10, pady=15)
-        P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=fontB1, height=50)
+                        padx=10, pady=10)
+        P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=fontB1, height=40)
         P1NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
-                    padx=40, pady=15)
+                    padx=40, pady=10)
         entries1.append(P1NameEnt)
 
     tLT2.columnconfigure(0, weight=1)
@@ -101,17 +101,17 @@ def teamInfoSetup():
 
     Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=fontB2)
     Name2Lbl.grid(row=1, column=0, sticky=tk.E,
-                padx=10, pady=15)
-    Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, height=50)
+                padx=10, pady=10)
+    Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, height=40)
     Name2Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
-                padx=40, pady=15)
-    for i in range(6):
+                padx=40, pady=10)
+    for i in range(9):
         PlayerName = ctk.CTkLabel(tLT2, text=f"Player {i+1} Name:", font=fontB2)
         PlayerName.grid(row=i+2, column=0, sticky=tk.E,
-                        padx=10, pady=15)
-        P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=fontB1, height=50)
+                        padx=10, pady=10)
+        P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=fontB1, height=40)
         P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
-                    padx=40, pady=15)
+                    padx=40, pady=10)
         entries2.append(P2NameEnt)
 
 
@@ -122,10 +122,43 @@ def teamInfoSetup():
     tLStartGame = ctk.CTkButton(teamLineups, text="Start", command=lambda: changeScreen(gameScreen))
     tLStartGame.pack(pady=(app.winfo_height()/2 - 150), anchor=tk.CENTER)
 
+# scoring system screen
+def gamescoreSetup():
+
+    inningNum = 1
+
+    upArrow = ctk.CTkImage(dark_image=Image.open("Assets/up_arrow.png"), size=(10, 10))
+    downArrow = ctk.CTkImage(dark_image=Image.open("Assets/down_arrow.png"), size=(10, 10))
+
+    topFrame = ctk.CTkFrame(master=gameScreen)
+    topFrame.pack(padx=20, pady=10, fill=tk.X)
+
+    inningLbl = ctk.CTkLabel(master=topFrame, text="Inning:", font=fontB1)
+    inningLbl.grid(row=0, column=0, rowspan=2, padx=5)
+    inningEnt = ctk.CTkEntry(master=topFrame, font=fontB1)
+    inningEnt.grid(row=0, column=1, rowspan=2)
+    inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
+                             width=10, height=10)
+    inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
+                               width=10, height=10)
+    inningUp.grid(row=0, column=2, padx=4, pady=2)
+    inningDown.grid(row=1, column=2, pady=2)
+
+    tabview = ctk.CTkTabview(master=gameScreen)
+    tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
+
+    allTab = tabview.add("All")
+    teamTab1 = tabview.add("Team 1")
+    teamTab2 = tabview.add("Team 2")
+    overviewTab = tabview.add("Game Overview")
+    tabview.set("All")
+
+    #All Tab
 
 
 mainMenuSetup()
 teamInfoSetup()
+gamescoreSetup()
 
 def test():
     testStr = ""
