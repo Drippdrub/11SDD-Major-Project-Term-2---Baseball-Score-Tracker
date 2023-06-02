@@ -123,9 +123,30 @@ def teamInfoSetup():
     tLStartGame.pack(pady=(app.winfo_height()/2 - 150), anchor=tk.CENTER)
 
 # scoring system screen
-def gamescoreSetup():
 
-    inningNum = 1
+inningNum = tk.StringVar()
+inningNum.set(1)
+inningNum.trace("w", lambda name, index, mode, inningNum=inningNum: callback(inningNum))
+inningOld = ""
+
+def callback(sv):
+    global inningNum
+    global inningOld
+    if sv.get().isdigit() or sv.get() == "":
+        inningOld = inningNum.get()
+    else:
+        inningNum.set(inningOld)
+
+def innAdd(var):
+    if int(var.get()) < 9:
+        var.set(int(var.get())+1)
+
+def innSub(var):
+    if int(var.get()) > 0:
+        var.set(int(var.get())-1)
+
+
+def gamescoreSetup():
 
     upArrow = ctk.CTkImage(dark_image=Image.open("Assets/up_arrow.png"), size=(10, 10))
     downArrow = ctk.CTkImage(dark_image=Image.open("Assets/down_arrow.png"), size=(10, 10))
@@ -135,12 +156,14 @@ def gamescoreSetup():
 
     inningLbl = ctk.CTkLabel(master=topFrame, text="Inning:", font=fontB1)
     inningLbl.grid(row=0, column=0, rowspan=2, padx=5)
-    inningEnt = ctk.CTkEntry(master=topFrame, font=fontB1)
+    inningEnt = ctk.CTkEntry(master=topFrame, font=fontB1, height=40, textvariable=inningNum)
     inningEnt.grid(row=0, column=1, rowspan=2)
     inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
-                             width=10, height=10)
+                             width=10, height=10, fg_color="#ababab",
+                             command=lambda: innAdd(inningNum))
     inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
-                               width=10, height=10)
+                               width=10, height=10, fg_color="#ababab",
+                               command=lambda: innSub(inningNum))
     inningUp.grid(row=0, column=2, padx=4, pady=2)
     inningDown.grid(row=1, column=2, pady=2)
 
