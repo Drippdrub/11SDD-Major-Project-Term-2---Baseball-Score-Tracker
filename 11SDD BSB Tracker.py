@@ -59,6 +59,11 @@ def mainMenuSetup():
     MMImgObj.pack(padx=50, side=tk.RIGHT)
 
 # team info screen
+def proceedRequest():
+    proceed = msgbox.askokcancel(title="Confirm Action", message="Do you wish to proceed?\n\nTeam batting orders cannot be changed from this point onward.")
+    if proceed:
+        changeScreen(gameScreen)
+
 def teamInfoSetup():
 
     global entries1 
@@ -67,6 +72,7 @@ def teamInfoSetup():
 
     tLT1 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
     tLT2 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
+    tLMid = ctk.CTkFrame(teamLineups, fg_color=bgClr)
 
     tLT1.columnconfigure(0, weight=1)
     tLT1.columnconfigure(1, weight=1)
@@ -119,8 +125,14 @@ def teamInfoSetup():
     tLT1.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
     tLT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-    tLStartGame = ctk.CTkButton(teamLineups, text="Start", command=lambda: changeScreen(gameScreen))
-    tLStartGame.pack(pady=(app.winfo_height()/2 - 150), anchor=tk.CENTER)
+    tLText = ctk.CTkLabel(tLMid, text="Make sure the players have been ordered into batting order",
+                          font=fontB1, wraplength=300, justify=tk.CENTER)
+    tLStartGame = ctk.CTkButton(tLMid, text="Start", command=proceedRequest)
+
+    tLText.pack(pady=15, anchor=tk.CENTER)
+    tLStartGame.pack(pady=30, anchor=tk.CENTER)
+    teamLineups.update()
+    tLMid.pack(pady=app.winfo_height()/2-200, anchor=tk.CENTER)
 
 # scoring system screen
 
@@ -140,9 +152,11 @@ def callback(sv):
 def innAdd(var):
     if int(var.get()) < 9:
         var.set(int(var.get())+1)
+    elif int(var.get()) == 9:
+        endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
 
 def innSub(var):
-    if int(var.get()) > 0:
+    if int(var.get()) > 1:
         var.set(int(var.get())-1)
 
 
@@ -170,6 +184,7 @@ def gamescoreSetup():
     tabview = ctk.CTkTabview(master=gameScreen)
     tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
+    global allTab 
     allTab = tabview.add("All")
     teamTab1 = tabview.add("Team 1")
     teamTab2 = tabview.add("Team 2")
@@ -177,21 +192,26 @@ def gamescoreSetup():
     tabview.set("All")
 
     #All Tab
+    AllT1 = ctk.CTkFrame(allTab, fg_color="#b00b13")
+    AllT2 = ctk.CTkFrame(allTab, fg_color="#069420")
+
+    T1Text = ctk.CTkLabel(AllT1, text="Team 1", font=fontB1)
+    T1Text.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
+                pady=10)
+    T2Text = ctk.CTkLabel(AllT2, text="Team 2", font=fontB1)
+    T2Text.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
+                pady=10)
+    
+    #All Tab Team1 Frame
+    
+
+    AllT1.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
+    AllT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
 
 mainMenuSetup()
 teamInfoSetup()
 gamescoreSetup()
-
-def test():
-    testStr = ""
-    for entry in entries1:
-        testStr = testStr + entry.get() + "   "
-    testLbl = ctk.CTkLabel(gameScreen, text=testStr, font=fontH1)
-    testLbl.pack(padx=30, pady=30)
-
-testBtn = ctk.CTkButton(gameScreen, text="Press", command=test)
-testBtn.pack()
 
 changeScreen(mainMenu)
 app.mainloop()
