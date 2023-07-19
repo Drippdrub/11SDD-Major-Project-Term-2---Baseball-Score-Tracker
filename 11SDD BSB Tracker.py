@@ -59,16 +59,20 @@ def mainMenuSetup():
     MMImgObj.pack(padx=50, side=tk.RIGHT)
 
 # team info screen
-def proceedRequest():
+def proceedRequest(name1, name2):
     proceed = msgbox.askokcancel(title="Confirm Action", message="Do you wish to proceed?\n\nTeam batting orders cannot be changed from this point onward.")
     if proceed:
+        homeName = name1.get()
+        awayName = name2.get()
+        gamescoreSetup(homeName, awayName)
         changeScreen(gameScreen)
 
 def teamInfoSetup():
 
-    global entries1 
-    entries1 = []
-    entries2 = []
+    global T1Members
+    global T2Members
+    T1Members = []
+    T2Members = []
 
     tLT1 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
     tLT2 = ctk.CTkFrame(teamLineups, fg_color=bgClr)
@@ -78,10 +82,10 @@ def teamInfoSetup():
     tLT1.columnconfigure(1, weight=1)
     tLT1.columnconfigure(2, weight=1)
 
-    T1Text = ctk.CTkLabel(tLT1, text="Team 1", font=fontH2)
+    T1Text = ctk.CTkLabel(tLT1, text="Home Team", font=fontH2)
     T1Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
                 pady=10)
-    T2Text = ctk.CTkLabel(tLT2, text="Team 2", font=fontH2)
+    T2Text = ctk.CTkLabel(tLT2, text="Away Team", font=fontH2)
     T2Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
                 pady=10)
     
@@ -89,7 +93,7 @@ def teamInfoSetup():
     Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=fontB2)
     Name1Lbl.grid(row=1, column=0, sticky=tk.E,
                 padx=10, pady=10)
-    Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="TEAM 1", font=fontB1, height=40)
+    Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="Home Team", font=fontB1, height=40)
     Name1Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
                 padx=40, pady=10)
     for i in range(9):
@@ -99,7 +103,7 @@ def teamInfoSetup():
         P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=fontB1, height=40)
         P1NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                     padx=40, pady=10)
-        entries1.append(P1NameEnt)
+        T1Members.append(P1NameEnt)
 
     tLT2.columnconfigure(0, weight=1)
     tLT2.columnconfigure(1, weight=1)
@@ -108,7 +112,7 @@ def teamInfoSetup():
     Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=fontB2)
     Name2Lbl.grid(row=1, column=0, sticky=tk.E,
                 padx=10, pady=10)
-    Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="TEAM 2", font=fontB1, height=40)
+    Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="Away Team", font=fontB1, height=40)
     Name2Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
                 padx=40, pady=10)
     for i in range(9):
@@ -118,7 +122,7 @@ def teamInfoSetup():
         P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=fontB1, height=40)
         P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                     padx=40, pady=10)
-        entries2.append(P2NameEnt)
+        T2Members.append(P2NameEnt)
 
 
 
@@ -127,7 +131,7 @@ def teamInfoSetup():
 
     tLText = ctk.CTkLabel(tLMid, text="Make sure the players have been ordered into batting order",
                           font=fontB1, wraplength=300, justify=tk.CENTER)
-    tLStartGame = ctk.CTkButton(tLMid, text="Start", command=proceedRequest)
+    tLStartGame = ctk.CTkButton(tLMid, text="Start", command=lambda: proceedRequest(Name1Ent, Name2Ent))
 
     tLText.pack(pady=15, anchor=tk.CENTER)
     tLStartGame.pack(pady=30, anchor=tk.CENTER)
@@ -159,8 +163,15 @@ def innSub(var):
     if int(var.get()) > 1:
         var.set(int(var.get())-1)
 
+def updateDevMode(devToggle, battingTeam):
+    if devToggle.get() == 1:
+        battingTeam.configure(state="normal")
+    else:
+        battingTeam.configure(state="disabled")
 
-def gamescoreSetup():
+
+def gamescoreSetup(homeTeamName, awayTeamName):
+    print(f"{homeTeamName} vs {awayTeamName}")
 
     upArrow = ctk.CTkImage(dark_image=Image.open("Assets/up_arrow.png"), size=(10, 10))
     downArrow = ctk.CTkImage(dark_image=Image.open("Assets/down_arrow.png"), size=(10, 10))
@@ -181,13 +192,21 @@ def gamescoreSetup():
     inningUp.grid(row=0, column=2, padx=4, pady=2)
     inningDown.grid(row=1, column=2, pady=2)
 
+    BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"],
+                                  state="disabled")
+    BattingTeam.grid(row=0, column=3, rowspan=2, padx=20)
+
+    devModeOn = ctk.IntVar(value=0)
+    devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
+    devOptions.grid(row=0, column=4, rowspan=2, padx=10)
+
     tabview = ctk.CTkTabview(master=gameScreen)
     tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
     global allTab 
     allTab = tabview.add("All")
-    teamTab1 = tabview.add("Team 1")
-    teamTab2 = tabview.add("Team 2")
+    teamTab1 = tabview.add("Home Team")
+    teamTab2 = tabview.add("Away Team")
     overviewTab = tabview.add("Game Overview")
     tabview.set("All")
 
@@ -195,10 +214,10 @@ def gamescoreSetup():
     AllT1 = ctk.CTkFrame(allTab, fg_color="#b00b13")
     AllT2 = ctk.CTkFrame(allTab, fg_color="#069420")
 
-    T1Text = ctk.CTkLabel(AllT1, text="Team 1", font=fontB1)
+    T1Text = ctk.CTkLabel(AllT1, text="Home Team", font=fontB1)
     T1Text.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
                 pady=10)
-    T2Text = ctk.CTkLabel(AllT2, text="Team 2", font=fontB1)
+    T2Text = ctk.CTkLabel(AllT2, text="Away Team", font=fontB1)
     T2Text.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
                 pady=10)
     
@@ -211,7 +230,6 @@ def gamescoreSetup():
 
 mainMenuSetup()
 teamInfoSetup()
-gamescoreSetup()
 
 changeScreen(mainMenu)
 app.mainloop()
