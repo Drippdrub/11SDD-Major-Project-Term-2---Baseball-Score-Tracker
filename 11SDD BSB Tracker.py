@@ -2,6 +2,37 @@ import tkinter as tk
 from tkinter import messagebox as msgbox
 import customtkinter as ctk
 from PIL import Image, ImageTk
+from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
+FR_PRIVATE  = 0x10
+FR_NOT_ENUM = 0x20
+
+def loadfont(fontpath, private=True, enumerable=False):
+    '''
+    Makes fonts located in file `fontpath` available to the font system.
+
+    `private`     if True, other processes cannot see this font, and this
+                  font will be unloaded when the process dies
+    `enumerable`  if True, this font will appear when enumerating fonts
+
+    See https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx
+
+    '''
+    # This function was taken from
+    # https://github.com/ifwe/digsby/blob/f5fe00244744aa131e07f09348d10563f3d8fa99/digsby/src/gui/native/win/winfonts.py#L15
+    # This function is written for Python 2.x. For 3.x, you
+    # have to convert the isinstance checks to bytes and str
+    if isinstance(fontpath, bytes):
+        pathbuf = create_string_buffer(fontpath)
+        AddFontResourceEx = windll.gdi32.AddFontResourceExA
+    elif isinstance(fontpath, str):
+        pathbuf = create_unicode_buffer(fontpath)
+        AddFontResourceEx = windll.gdi32.AddFontResourceExW
+    else:
+        raise TypeError('fontpath must be of type str or unicode')
+
+    flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
+    numFontsAdded = AddFontResourceEx(byref(pathbuf), flags, 0)
+    return bool(numFontsAdded)
 
 # initialise window
 ctk.set_appearance_mode("Dark")
@@ -14,8 +45,11 @@ app.iconbitmap("Assets/ball_icon.ico")
 app.title("Baseball Scoring System")
 
 # set fonts
+loadfont("fontpath\\airstrikeacad.ttf")
+loadfont("fontpath\Venus Plant.ttf")
 fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
 fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
+# fontH3 = 
 fontB1 = ctk.CTkFont(family="Franklin Gothic", size=18)
 fontB2 = ctk.CTkFont(family="Cooper Black", size=24)
 
@@ -192,8 +226,9 @@ def gamescoreSetup(homeTeamName, awayTeamName):
     inningUp.grid(row=0, column=2, padx=4, pady=2)
     inningDown.grid(row=1, column=2, pady=2)
 
-    BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"],
-                                  state="disabled")
+    BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], command=updateTeamFrames)
+    BattingTeam.set(f"Away Team ({awayTeamName})")
+    BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
     BattingTeam.grid(row=0, column=3, rowspan=2, padx=20)
 
     devModeOn = ctk.IntVar(value=0)
@@ -203,7 +238,6 @@ def gamescoreSetup(homeTeamName, awayTeamName):
     tabview = ctk.CTkTabview(master=gameScreen)
     tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
-    global allTab 
     allTab = tabview.add("All")
     teamTab1 = tabview.add("Home Team")
     teamTab2 = tabview.add("Away Team")
