@@ -5,7 +5,7 @@ from PIL import Image, ImageTk
 from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
 FR_PRIVATE  = 0x10
 FR_NOT_ENUM = 0x20
-bgClr = "#121212"
+bgClr = "#212121"
 
 def loadfont(fontpath, private=True, enumerable=False):
     '''
