@@ -121,8 +121,10 @@ class Lineups(ctk.CTkFrame):
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        T1Members = []
-        T2Members = []
+        global HomeEntries 
+        HomeEntries = []
+        global AwayEntries 
+        AwayEntries = []
 
         tLT1 = ctk.CTkFrame(self, fg_color=bgClr)
         tLT2 = ctk.CTkFrame(self, fg_color=bgClr)
@@ -153,7 +155,7 @@ class Lineups(ctk.CTkFrame):
             P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40)
             P1NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                         padx=40, pady=10)
-            T1Members.append(P1NameEnt)
+            HomeEntries.append(P1NameEnt)
 
         tLT2.columnconfigure(0, weight=1)
         tLT2.columnconfigure(1, weight=1)
@@ -172,7 +174,7 @@ class Lineups(ctk.CTkFrame):
             P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40)
             P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                         padx=40, pady=10)
-            T2Members.append(P2NameEnt)
+            AwayEntries.append(P2NameEnt)
 
 
 
@@ -192,19 +194,31 @@ class Lineups(ctk.CTkFrame):
         self.controller = controller
         proceed = msgbox.askokcancel(title="Confirm Action", message="Do you wish to proceed?\n\nTeam batting orders cannot be changed from this point onward.")
         if proceed:
+            global HomeMembers
+            HomeMembers = []
+            for entry in HomeEntries:
+                HomeMembers.append(entry.get())
+            global AwayMembers
+            AwayMembers = []
+            for entry in AwayEntries:
+                AwayMembers.append(entry.get())
+            print(AwayMembers)
             controller.show_frame("GameScore")
 
 # set screen frames
 
 
 class GameScore(ctk.CTkFrame):
+    homeTeamName = "Team 1"
+    awayTeamName = "Team 2"
+
     def __init__(self, parent, controller):
-        homeTeamName = "Team 1"
-        awayTeamName = "Team 2"
+        HomeMembers = []
+        AwayMembers = []
 
         inningNum = tk.StringVar()
         inningNum.set(1)
-        inningNum.trace("w", lambda name, index, mode, inningNum=inningNum: self.callback(inningNum, inningOld))
+        inningNum.trace("w", lambda name, index, mode, inningNum=inningNum: self.innCallback(inningNum, inningOld))
         inningOld = ""
         
         ctk.CTkFrame.__init__(self, parent)
@@ -221,18 +235,18 @@ class GameScore(ctk.CTkFrame):
         inningEnt.grid(row=0, column=1, rowspan=2)
         inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.innAdd(inningNum))
+                                command=lambda: self.entAdd(inningNum))
         inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.innSub(inningNum))
+                                command=lambda: self.entSub(inningNum, "inningNum"))
         inningUp.grid(row=0, column=2, padx=4, pady=2)
         inningDown.grid(row=1, column=2, pady=2)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"])
-        BattingTeam.set(f"Away Team ({awayTeamName})")
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({self.homeTeamName})", f"Away Team ({self.awayTeamName})"], width=200)
+        BattingTeam.set(f"Away Team ({self.awayTeamName})")
         BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
         BattingTeam.grid(row=0, column=3, rowspan=2, padx=20)
-        BattingTeam._canvas.bind('<<ComboboxSelected>>', lambda: retrieveTeam(BattingTeam, batText), "+")
+        BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry))
 
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
@@ -249,36 +263,77 @@ class GameScore(ctk.CTkFrame):
 
         #All Tab
         AllBat = ctk.CTkFrame(allTab, fg_color="#b00b13")
+        AllBat.columnconfigure(0, weight=2)
+        AllBat.columnconfigure(1, weight=3)
+        AllBat.columnconfigure(2, weight=1)
+        AllBat.columnconfigure(3, weight=2)
+        AllBat.columnconfigure(4, weight=2)
+        AllBat.columnconfigure(5, weight=2)
+        AllBat.columnconfigure(6, weight=6)
         AllFld = ctk.CTkFrame(allTab, fg_color="#069420")
 
         batText = ctk.CTkLabel(AllBat, text=BattingTeam.get(), font=controller.fontB1)
-        batText.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
+        batText.grid(row=0, column=3, columnspan=3, sticky=tk.W+tk.E,
                     pady=10)
-        fldText = ctk.CTkLabel(AllFld, text=f"Fielding Team ({homeTeamName})", font=controller.fontB1)
-        fldText.grid(row=0, column=2, columnspan=2, sticky=tk.W+tk.E,
+        fldText = ctk.CTkLabel(AllFld, text=f"Fielding Team ({self.homeTeamName})", font=controller.fontB1)
+        fldText.grid(row=0, column=3, columnspan=3, sticky=tk.W+tk.E,
                     pady=10)
 
-        #All Tab Team1 Frame
+        #All Tab Batting Frame
+        batterName = ctk.CTkLabel(AllBat, text="Batter:")
+        batterEntry = ctk.CTkComboBox(AllBat, values=AwayMembers)
+        batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
+        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
+        subButton = ctk.CTkButton(AllBat, text="Substitute Batter")
+        subButton.grid(row=1, column=6, sticky=tk.W+tk.E, padx=10, pady=10)
+
+        runs = tk.StringVar()
+        runs.set(0)
+        runs.trace("w", lambda name, index, mode, runs=runs: self.callback(runs, runsOld))
+        runsOld = ""
+
+        runText = ctk.CTkLabel(AllBat, text="Runs:")
+        runEntry = ctk.CTkEntry(AllBat, textvariable=runs)
+        runText.grid(row=2, rowspan=2, column=0, sticky=tk.W+tk.E, padx=10, pady=10)
+        runEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=10, pady=10)
+        runUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entAdd(runs))
+        runDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entSub(runs, "runs"))
+        runUp.grid(row=2, column=2, padx=4, pady=2)
+        runDown.grid(row=3, column=2, pady=2)
 
 
         AllBat.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
         AllFld.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
     
+    def innCallback(self, sv, old):
+        if sv.get().isdigit() or sv.get == "":
+            old = sv.get()
+        else:
+            sv.set(old)
+    
     def callback(self, sv, old):
-        if sv.get().isdigit() or sv.get() == "":
+        if sv.get().isdigit():
             old = sv.get()
         else:
             sv.set(old)
 
-    def innAdd(self, var):
+    def entAdd(self, var):
         if int(var.get()) < 9:
             var.set(int(var.get())+1)
         elif int(var.get()) == 9:
             endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
 
-    def innSub(self, var):
-        if int(var.get()) > 1:
-            var.set(int(var.get())-1)
+    def entSub(self, var, varName):
+        if varName == "inningNum":
+            if int(var.get()) > 1:
+                var.set(int(var.get())-1)
+        else:
+            if int(var.get()) > 0:
+                var.set(int(var.get())-1)
 
     def updateDevMode(self, devOptions, BattingTeam):
         if devOptions.get() == 1:
@@ -286,10 +341,18 @@ class GameScore(ctk.CTkFrame):
         else:
             BattingTeam.configure(state="disabled")
 
-    def retrieveTeam(self, BattingTeam, batText):
-        print("ran")
+    def updateTeams(self, BattingTeam, batText, fldText, batterName):
+        batOld=batText.cget("text")
         text=BattingTeam.get()
-        batText.configure(text=text)
+        if batOld != text:
+            batText.configure(text=text)
+            fldText.configure(text=batOld)
+            if text == f"Home Team ({self.homeTeamName})":
+                batterName.configure(values=HomeMembers)
+                batterName.set(HomeMembers[0])
+            else:
+                batterName.configure(values=AwayMembers)
+                batterName.set(AwayMembers[0])
 
 
 
