@@ -1,10 +1,17 @@
 import tkinter as tk
 from tkinter import messagebox as msgbox
+from tkinter import Canvas
 import customtkinter as ctk
 from PIL import Image, ImageTk
-from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
-FR_PRIVATE  = 0x10
-FR_NOT_ENUM = 0x20
+
+try:
+    from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
+    FR_PRIVATE  = 0x10
+    FR_NOT_ENUM = 0x20
+except:
+    pass
+
+
 bgClr = "#212121"
 
 def loadfont(fontpath, private=True, enumerable=False):
@@ -22,19 +29,21 @@ def loadfont(fontpath, private=True, enumerable=False):
     # https://github.com/ifwe/digsby/blob/f5fe00244744aa131e07f09348d10563f3d8fa99/digsby/src/gui/native/win/winfonts.py#L15
     # This function is written for Python 2.x. For 3.x, you
     # have to convert the isinstance checks to bytes and str
-    if isinstance(fontpath, bytes):
-        pathbuf = create_string_buffer(fontpath)
-        AddFontResourceEx = windll.gdi32.AddFontResourceExA
-    elif isinstance(fontpath, str):
-        pathbuf = create_unicode_buffer(fontpath)
-        AddFontResourceEx = windll.gdi32.AddFontResourceExW
-    else:
-        raise TypeError('fontpath must be of type str or unicode')
+    try:
+        if isinstance(fontpath, bytes):
+            pathbuf = create_string_buffer(fontpath)
+            AddFontResourceEx = windll.gdi32.AddFontResourceExA
+        elif isinstance(fontpath, str):
+            pathbuf = create_unicode_buffer(fontpath)
+            AddFontResourceEx = windll.gdi32.AddFontResourceExW
+        else:
+            raise TypeError('fontpath must be of type str or unicode')
 
-    flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
-    numFontsAdded = AddFontResourceEx(byref(pathbuf), flags, 0)
-    return bool(numFontsAdded)
-
+        flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
+        numFontsAdded = AddFontResourceEx(byref(pathbuf), flags, 0)
+        return bool(numFontsAdded)
+    except:
+        pass
 
 class Win(ctk.CTk):
 
@@ -44,8 +53,8 @@ class Win(ctk.CTk):
         self.resizable(width=False, height=False)
         self.iconbitmap("Assets/ball_icon.ico")
         self.title("Baseball Scoring System")
-        loadfont("fontpath\\airstrikeacad.ttf")
-        loadfont("fontpath\Venus Plant.ttf")
+        loadfont("Airstrike Academy.ttf")
+        loadfont("Venus Plant.ttf")
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
         self.fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
         # fontH3 = 
@@ -219,10 +228,11 @@ class GameScore(ctk.CTkFrame):
         inningUp.grid(row=0, column=2, padx=4, pady=2)
         inningDown.grid(row=1, column=2, pady=2)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], command=lambda: self.updateText(BattingTeam))
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"])
         BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
         BattingTeam.grid(row=0, column=3, rowspan=2, padx=20)
+        BattingTeam._canvas.bind('<<ComboboxSelected>>', lambda: retrieveTeam(BattingTeam, batText), "+")
 
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
@@ -276,8 +286,11 @@ class GameScore(ctk.CTkFrame):
         else:
             BattingTeam.configure(state="disabled")
 
-    def updateText(self, BattingTeam):
+    def retrieveTeam(self, BattingTeam, batText):
+        print("ran")
         text=BattingTeam.get()
+        batText.configure(text=text)
+
 
 
 app = Win()
