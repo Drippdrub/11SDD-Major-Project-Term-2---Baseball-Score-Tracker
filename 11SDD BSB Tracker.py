@@ -8,7 +8,7 @@ try:
     from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
     FR_PRIVATE  = 0x10
     FR_NOT_ENUM = 0x20
-except:
+except ImportError:
     pass
 
 
@@ -82,6 +82,8 @@ class Win(ctk.CTk):
     def show_frame (self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
+        if page_name == "GameScore":
+            pass
     
 
 # main menu screen
@@ -114,7 +116,7 @@ class StartScreen(ctk.CTkFrame):
     def destroyRequest(self):
         close = msgbox.askyesno(title="Closing Program", message="Are you sure you want to exit the program?")
         if close == True:
-            self.winfo_parent.destroy()
+            self.quit()
 
 
 class Lineups(ctk.CTkFrame):
@@ -204,6 +206,8 @@ class Lineups(ctk.CTkFrame):
                 AwayMembers.append(entry.get())
             print(AwayMembers)
             controller.show_frame("GameScore")
+            batterEntry.configure(values=AwayMembers)
+            batterEntry.set(AwayMembers[0])
 
 # set screen frames
 
@@ -213,8 +217,8 @@ class GameScore(ctk.CTkFrame):
     awayTeamName = "Team 2"
 
     def __init__(self, parent, controller):
-        HomeMembers = []
-        AwayMembers = []
+        HomeMembers = [""]
+        AwayMembers = [""]
 
         inningNum = tk.StringVar()
         inningNum.set(1)
@@ -235,22 +239,25 @@ class GameScore(ctk.CTkFrame):
         inningEnt.grid(row=0, column=1, rowspan=2)
         inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(inningNum))
+                                command=lambda: self.entAdd(inningNum, "inningNum"))
         inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(inningNum, "inningNum"))
         inningUp.grid(row=0, column=2, padx=4, pady=2)
         inningDown.grid(row=1, column=2, pady=2)
 
+        BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
+        BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
+
         BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({self.homeTeamName})", f"Away Team ({self.awayTeamName})"], width=200)
         BattingTeam.set(f"Away Team ({self.awayTeamName})")
         BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
-        BattingTeam.grid(row=0, column=3, rowspan=2, padx=20)
+        BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
         BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry))
 
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
-        devOptions.grid(row=0, column=4, rowspan=2, padx=10)
+        devOptions.grid(row=0, column=5, rowspan=2, padx=15)
 
         tabview = ctk.CTkTabview(master=self)
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
@@ -267,8 +274,8 @@ class GameScore(ctk.CTkFrame):
         AllBat.columnconfigure(1, weight=3)
         AllBat.columnconfigure(2, weight=1)
         AllBat.columnconfigure(3, weight=2)
-        AllBat.columnconfigure(4, weight=2)
-        AllBat.columnconfigure(5, weight=2)
+        AllBat.columnconfigure(4, weight=3)
+        AllBat.columnconfigure(5, weight=1)
         AllBat.columnconfigure(6, weight=6)
         AllFld = ctk.CTkFrame(allTab, fg_color="#069420")
 
@@ -280,6 +287,8 @@ class GameScore(ctk.CTkFrame):
                     pady=10)
 
         #All Tab Batting Frame
+        global batterEntry
+
         batterName = ctk.CTkLabel(AllBat, text="Batter:")
         batterEntry = ctk.CTkComboBox(AllBat, values=AwayMembers)
         batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
@@ -301,9 +310,27 @@ class GameScore(ctk.CTkFrame):
                                 command=lambda: self.entAdd(runs))
         runDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entSub(runs, "runs"))
+                                command=lambda: self.entSub(runs))
         runUp.grid(row=2, column=2, padx=4, pady=2)
         runDown.grid(row=3, column=2, pady=2)
+
+        strikes = tk.StringVar()
+        strikes.set(0)
+        strikes.trace("w", lambda name, index, mode, strikes=strikes: self.callback(strikes, strikesOld))
+        strikesOld = ""
+
+        strikeText = ctk.CTkLabel(AllBat, text="Strikes:")
+        strikeEntry = ctk.CTkEntry(AllBat, textvariable=strikes)
+        strikeText.grid(row=2, rowspan=2, column=3, sticky=tk.W+tk.E, padx=10, pady=10)
+        strikeEntry.grid(row=2, rowspan=2, column=4, sticky=tk.W+tk.E, padx=10, pady=10)
+        strikeUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entAdd(strikes))
+        strikeDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entSub(strikes))
+        strikeUp.grid(row=2, column=5, padx=4, pady=2)
+        strikeDown.grid(row=3, column=5, pady=2)
 
 
         AllBat.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -321,14 +348,25 @@ class GameScore(ctk.CTkFrame):
         else:
             sv.set(old)
 
-    def entAdd(self, var):
-        if int(var.get()) < 9:
+    def entAdd(self, var, *names):
+        try:
+            name = names[0]
+        except:
+            name = "none"
+        if name == "inningNum":
+            if int(var.get()) < 9:
+                var.set(int(var.get())+1)
+            elif int(var.get()) >= 9:
+                endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
+        else:
             var.set(int(var.get())+1)
-        elif int(var.get()) == 9:
-            endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
 
-    def entSub(self, var, varName):
-        if varName == "inningNum":
+    def entSub(self, var, *names):
+        try:
+            name = names[0]
+        except:
+            name = "none"
+        if name == "inningNum":
             if int(var.get()) > 1:
                 var.set(int(var.get())-1)
         else:
