@@ -208,6 +208,8 @@ class Lineups(ctk.CTkFrame):
             controller.show_frame("GameScore")
             batterEntry.configure(values=AwayMembers)
             batterEntry.set(AwayMembers[0])
+            fieldEntry.configure(values=HomeMembers)
+            fieldEntry.set(HomeMembers[0])
 
 # set screen frames
 
@@ -253,7 +255,7 @@ class GameScore(ctk.CTkFrame):
         BattingTeam.set(f"Away Team ({self.awayTeamName})")
         BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
-        BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry))
+        BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry, fieldEntry))
 
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
@@ -276,7 +278,9 @@ class GameScore(ctk.CTkFrame):
         AllBat.columnconfigure(3, weight=2)
         AllBat.columnconfigure(4, weight=3)
         AllBat.columnconfigure(5, weight=1)
-        AllBat.columnconfigure(6, weight=6)
+        AllBat.columnconfigure(6, weight=100)
+        AllBat.columnconfigure(7, weight=100)
+        AllBat.columnconfigure(8, weight=100)
         AllFld = ctk.CTkFrame(allTab, fg_color="#069420")
 
         batText = ctk.CTkLabel(AllBat, text=BattingTeam.get(), font=controller.fontB1)
@@ -290,11 +294,11 @@ class GameScore(ctk.CTkFrame):
         global batterEntry
 
         batterName = ctk.CTkLabel(AllBat, text="Batter:")
-        batterEntry = ctk.CTkComboBox(AllBat, values=AwayMembers)
-        batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
-        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
+        batterEntry = ctk.CTkComboBox(AllBat)
+        batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=20)
+        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=20)
         subButton = ctk.CTkButton(AllBat, text="Substitute Batter")
-        subButton.grid(row=1, column=6, sticky=tk.W+tk.E, padx=10, pady=10)
+        subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=20)
 
         runs = tk.StringVar()
         runs.set(0)
@@ -303,7 +307,7 @@ class GameScore(ctk.CTkFrame):
 
         runText = ctk.CTkLabel(AllBat, text="Runs:")
         runEntry = ctk.CTkEntry(AllBat, textvariable=runs)
-        runText.grid(row=2, rowspan=2, column=0, sticky=tk.W+tk.E, padx=10, pady=10)
+        runText.grid(row=2, rowspan=2, column=0, sticky=tk.W+tk.E, padx=20, pady=10)
         runEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=10, pady=10)
         runUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
@@ -325,16 +329,28 @@ class GameScore(ctk.CTkFrame):
         strikeEntry.grid(row=2, rowspan=2, column=4, sticky=tk.W+tk.E, padx=10, pady=10)
         strikeUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(strikes))
+                                command=lambda: self.entAdd(strikes, "strikes"))
         strikeDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entSub(strikes))
+                                command=lambda: self.entSub(strikes, "strikes"))
         strikeUp.grid(row=2, column=5, padx=4, pady=2)
         strikeDown.grid(row=3, column=5, pady=2)
 
+        # All Tab Fielding Frame
+        global fieldEntry
+
+        fieldName = ctk.CTkLabel(AllFld, text="Pitcher:")
+        fieldEntry = ctk.CTkComboBox(AllFld, values=AwayMembers)
+        fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
+        fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
+
+        blank = ctk.CTkLabel(AllFld, text="empty text?", fg_color=bgClr)
+        blank.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
 
         AllBat.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
         AllFld.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        
     
     def innCallback(self, sv, old):
         if sv.get().isdigit() or sv.get == "":
@@ -358,6 +374,11 @@ class GameScore(ctk.CTkFrame):
                 var.set(int(var.get())+1)
             elif int(var.get()) >= 9:
                 endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
+        elif name == "strikes":
+            if int(var.get()) < 3:
+                var.set(int(var.get())+1)
+            elif int(var.get()) >= 3:
+                var.set(0)
         else:
             var.set(int(var.get())+1)
 
@@ -379,7 +400,7 @@ class GameScore(ctk.CTkFrame):
         else:
             BattingTeam.configure(state="disabled")
 
-    def updateTeams(self, BattingTeam, batText, fldText, batterName):
+    def updateTeams(self, BattingTeam, batText, fldText, batterName, fieldName):
         batOld=batText.cget("text")
         text=BattingTeam.get()
         if batOld != text:
@@ -388,9 +409,13 @@ class GameScore(ctk.CTkFrame):
             if text == f"Home Team ({self.homeTeamName})":
                 batterName.configure(values=HomeMembers)
                 batterName.set(HomeMembers[0])
+                fieldName.configure(values=AwayMembers)
+                fieldName.set(AwayMembers[0])
             else:
                 batterName.configure(values=AwayMembers)
                 batterName.set(AwayMembers[0])
+                fieldName.configure(values=HomeMembers)
+                fieldName.set(HomeMembers[0])
 
 
 
