@@ -221,14 +221,17 @@ class Settings(ctk.CTkFrame):
         fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
         fileNameLbl.grid(row=0, column=0)
         fileNameEnt.grid(row=0, column=1)
-        settingButton = ctk.CTkButton(settingFrame, text="Proceed", command=lambda: self.openGamescore(controller, fileName))
+        settingButton = ctk.CTkButton(settingFrame, text="Proceed", command=lambda: self.openGamescore(controller, fileNameEnt.get()))
         settingButton.grid(row=1, column=0, columnspan=2)
+        settingFrame.pack()
     
     def openGamescore(self, controller, fileName):
         xlfile = f"{fileName}.xlsx"
         bsbTrack = xl.Workbook(xlfile)
         playerScores = bsbTrack.add_worksheet()
         bsbTrack.close()
+
+        print(fileName)
 
 
 
