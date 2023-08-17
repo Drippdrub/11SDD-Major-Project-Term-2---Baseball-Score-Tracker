@@ -3,6 +3,8 @@ from tkinter import messagebox as msgbox
 from tkinter import Canvas
 import customtkinter as ctk
 from PIL import Image, ImageTk
+import xlsxwriter as xl
+import openpyxl as openpx
 
 try:
     from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
@@ -55,11 +57,13 @@ class Win(ctk.CTk):
         self.title("Baseball Scoring System")
         loadfont("Airstrike Academy.ttf")
         loadfont("Venus Plant.ttf")
+        loadfont("Metropolis-Regular.otf")
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
         self.fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
         # fontH3 = 
         self.fontB1 = ctk.CTkFont(family="Franklin Gothic", size=18)
         self.fontB2 = ctk.CTkFont(family="Cooper Black", size=24)
+        self.fontB3 = ctk.CTkFont(family="Metropolis", size=15)
 
         # initialise window
         ctk.set_appearance_mode("Dark")
@@ -71,7 +75,7 @@ class Win(ctk.CTk):
         app.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartScreen, Lineups, GameScore):
+        for F in (StartScreen, Lineups, Settings, GameScore):
             page_name = F.__name__
             frame = F(parent=app, controller=self)
             self.frames[page_name] = frame
@@ -82,8 +86,6 @@ class Win(ctk.CTk):
     def show_frame (self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
-        if page_name == "GameScore":
-            pass
     
 
 # main menu screen
@@ -205,13 +207,37 @@ class Lineups(ctk.CTkFrame):
             for entry in AwayEntries:
                 AwayMembers.append(entry.get())
             print(AwayMembers)
-            controller.show_frame("GameScore")
-            batterEntry.configure(values=AwayMembers)
-            batterEntry.set(AwayMembers[0])
-            fieldEntry.configure(values=HomeMembers)
-            fieldEntry.set(HomeMembers[0])
+            controller.show_frame("Settings")
 
-# set screen frames
+class Settings(ctk.CTkFrame):
+    
+    def __init__(self, parent, controller):
+        ctk.CTkFrame.__init__(self, parent)
+        settingFrame = ctk.CTkFrame(self)
+
+        fileName = tk.StringVar()
+
+        fileNameLbl = ctk.CTkLabel(settingFrame, text="File Name:")
+        fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
+        fileNameLbl.grid(row=0, column=0)
+        fileNameEnt.grid(row=0, column=1)
+        settingButton = ctk.CTkButton(settingFrame, text="Proceed", command=lambda: self.openGamescore(controller, fileName))
+        settingButton.grid(row=1, column=0, columnspan=2)
+    
+    def openGamescore(self, controller, fileName):
+        xlfile = f"{fileName}.xlsx"
+        bsbTrack = xl.Workbook(xlfile)
+        playerScores = bsbTrack.add_worksheet()
+        bsbTrack.close()
+
+
+
+        controller.show_frame("GameScore")
+        batterEntry.configure(values=AwayMembers)
+        batterEntry.set(AwayMembers[0])
+        fieldEntry.configure(values=HomeMembers)
+        fieldEntry.set(HomeMembers[0])
+
 
 
 class GameScore(ctk.CTkFrame):
@@ -278,9 +304,9 @@ class GameScore(ctk.CTkFrame):
         AllBat.columnconfigure(3, weight=2)
         AllBat.columnconfigure(4, weight=3)
         AllBat.columnconfigure(5, weight=1)
-        AllBat.columnconfigure(6, weight=10)
-        AllBat.columnconfigure(7, weight=10)
-        AllBat.columnconfigure(8, weight=10)
+        AllBat.columnconfigure(6, weight=2)
+        AllBat.columnconfigure(7, weight=2)
+        AllBat.columnconfigure(8, weight=2)
         AllFld = ctk.CTkFrame(allTab, fg_color="#069420")
         AllFld.columnconfigure(0, weight=2)
         AllFld.columnconfigure(1, weight=3)
@@ -288,35 +314,32 @@ class GameScore(ctk.CTkFrame):
         AllFld.columnconfigure(3, weight=2)
         AllFld.columnconfigure(4, weight=3)
         AllFld.columnconfigure(5, weight=1)
-        AllFld.columnconfigure(6, weight=10)
-        AllFld.columnconfigure(7, weight=10)
-        AllFld.columnconfigure(8, weight=10)
 
         batText = ctk.CTkLabel(AllBat, text=BattingTeam.get(), font=controller.fontB1)
-        batText.grid(row=0, column=3, columnspan=3, sticky=tk.W+tk.E,
-                    pady=10)
+        batText.grid(row=0, column=0, columnspan=9, sticky=tk.W+tk.E,
+                    pady=20)
         fldText = ctk.CTkLabel(AllFld, text=f"Fielding Team ({self.homeTeamName})", font=controller.fontB1)
-        fldText.grid(row=0, column=3, columnspan=3, sticky=tk.W+tk.E,
-                    pady=10)
+        fldText.grid(row=0, column=0, columnspan=9, sticky=tk.W+tk.E,
+                    pady=20)
 
         #All Tab Batting Frame
         global batterEntry
 
-        batterName = ctk.CTkLabel(AllBat, text="Batter:")
+        batterName = ctk.CTkLabel(AllBat, text="Batter:", font=controller.fontB3)
         batterEntry = ctk.CTkComboBox(AllBat)
-        batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=20)
-        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=20)
-        subButton = ctk.CTkButton(AllBat, text="Substitute Batter")
-        subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=20)
+        batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
+        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=30)
+        subButton = ctk.CTkButton(AllBat, text="Substitute Batter", font=controller.fontB3)
+        subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=30)
 
         runs = tk.StringVar()
         runs.set(0)
         runs.trace("w", lambda name, index, mode, runs=runs: self.callback(runs, runsOld))
         runsOld = ""
 
-        runText = ctk.CTkLabel(AllBat, text="Runs:")
-        runEntry = ctk.CTkEntry(AllBat, textvariable=runs)
-        runText.grid(row=2, rowspan=2, column=0, sticky=tk.E, padx=(20, 5), pady=10)
+        runText = ctk.CTkLabel(AllBat, text="Runs:", font=controller.fontB3)
+        runEntry = ctk.CTkEntry(AllBat, textvariable=runs, width=50)
+        runText.grid(row=2, rowspan=2, column=0, sticky=tk.E, padx=10, pady=10)
         runEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         runUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
@@ -332,9 +355,9 @@ class GameScore(ctk.CTkFrame):
         strikes.trace("w", lambda name, index, mode, strikes=strikes: self.callback(strikes, strikesOld))
         strikesOld = ""
 
-        strikeText = ctk.CTkLabel(AllBat, text="Strikes:")
-        strikeEntry = ctk.CTkEntry(AllBat, textvariable=strikes)
-        strikeText.grid(row=2, rowspan=2, column=3, sticky=tk.E, padx=(15, 5), pady=10)
+        strikeText = ctk.CTkLabel(AllBat, text="Strikes:", font=controller.fontB3)
+        strikeEntry = ctk.CTkEntry(AllBat, textvariable=strikes, width=50)
+        strikeText.grid(row=2, rowspan=2, column=3, sticky=tk.E, padx=10, pady=10)
         strikeEntry.grid(row=2, rowspan=2, column=4, sticky=tk.W+tk.E, padx=5, pady=10)
         strikeUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
@@ -345,24 +368,40 @@ class GameScore(ctk.CTkFrame):
         strikeUp.grid(row=2, column=5, padx=4, pady=2, sticky=tk.W)
         strikeDown.grid(row=3, column=5, padx=4, pady=2, sticky=tk.W)
 
+        foulBall = tk.StringVar()
+        foulBall.set(0)
+        foulBall.trace("w", lambda name, index, mode, foulBall=foulBall: self.callback(foulBall, foulBallOld))
+        foulBallOld = ""
+
+        foulBallText = ctk.CTkLabel(AllBat, text="Foul Balls:", font=controller.fontB3)
+        foulBallEntry = ctk.CTkEntry(AllBat, textvariable=foulBall, width=50)
+        foulBallText.grid(row=4, rowspan=2, column=0, sticky=tk.E, padx=10, pady=30)
+        foulBallEntry.grid(row=4, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
+        foulBallUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entAdd(foulBall, "foulBall"))
+        foulBallDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
+                                width=10, height=10, fg_color="#ababab",
+                                command=lambda: self.entSub(foulBall, "foulBall"))
+        foulBallUp.grid(row=4, column=2, padx=4, pady=3, sticky=tk.W+tk.S)
+        foulBallDown.grid(row=5, column=2, padx=4, pady=3, sticky=tk.W+tk.N)
+
         # All Tab Fielding Frame
         global fieldEntry
 
-        fieldName = ctk.CTkLabel(AllFld, text="Pitcher:")
+        fieldName = ctk.CTkLabel(AllFld, text="Pitcher:", font=controller.fontB3)
         fieldEntry = ctk.CTkComboBox(AllFld)
-        fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
-        fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=10)
-        subButton = ctk.CTkButton(AllFld, text="Substitute Pitcher")
-        subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=20)
+        fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
+        fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
         balls = tk.StringVar()
         balls.set(0)
         balls.trace("w", lambda name, index, mode, balls=balls: self.callback(balls, ballsOld))
         ballsOld = ""
 
-        ballText = ctk.CTkLabel(AllFld, text="Balls:")
-        ballEntry = ctk.CTkEntry(AllFld, textvariable=balls)
-        ballText.grid(row=2, rowspan=2, column=0, sticky=tk.E, padx=(20, 5), pady=10)
+        ballText = ctk.CTkLabel(AllFld, text="Balls:", font=controller.fontB3)
+        ballEntry = ctk.CTkEntry(AllFld, textvariable=balls, width=50)
+        ballText.grid(row=2, rowspan=2, column=0, sticky=tk.E, padx=10, pady=10)
         ballEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         ballUp = ctk.CTkButton(master=AllFld, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
@@ -373,8 +412,9 @@ class GameScore(ctk.CTkFrame):
         ballUp.grid(row=2, column=2, padx=4, pady=2, sticky=tk.W)
         ballDown.grid(row=3, column=2, padx=4, pady=2, sticky=tk.W)
 
-        AllBat.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
-        AllFld.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        AllBat.pack(padx=(10, 5), side=tk.LEFT, fill=tk.BOTH, expand=True)
+        AllFld.pack(padx=(5, 10), side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         
     
