@@ -1,16 +1,19 @@
+# GUI Libraries
 import tkinter as tk
 from tkinter import messagebox as msgbox
-from tkinter import Canvas
 import customtkinter as ctk
+# Image Library
 from PIL import Image, ImageTk
+# Excel Read/Write Libraries
 import xlsxwriter as xl
 import openpyxl as openpx
 
+# ctypes used solely for the purpose of imp[orting custom fonts
 try:
     from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
     FR_PRIVATE  = 0x10
     FR_NOT_ENUM = 0x20
-except ImportError:
+except ImportError: #for testing on mac, windll does not work on mac, disables the fonts on mac
     pass
 
 
@@ -31,7 +34,7 @@ def loadfont(fontpath, private=True, enumerable=False):
     # https://github.com/ifwe/digsby/blob/f5fe00244744aa131e07f09348d10563f3d8fa99/digsby/src/gui/native/win/winfonts.py#L15
     # This function is written for Python 2.x. For 3.x, you
     # have to convert the isinstance checks to bytes and str
-    try:
+    try: #for testing on mac, windll does not work on mac, disables the fonts on mac
         if isinstance(fontpath, bytes):
             pathbuf = create_string_buffer(fontpath)
             AddFontResourceEx = windll.gdi32.AddFontResourceExA
@@ -44,7 +47,7 @@ def loadfont(fontpath, private=True, enumerable=False):
         flags = (FR_PRIVATE if private else 0) | (FR_NOT_ENUM if not enumerable else 0)
         numFontsAdded = AddFontResourceEx(byref(pathbuf), flags, 0)
         return bool(numFontsAdded)
-    except:
+    except: #for testing on mac, windll does not work on mac, disables the fonts on mac
         pass
 
 class Win(ctk.CTk):
@@ -52,7 +55,7 @@ class Win(ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.geometry("1280x720")
-       
+        self.resizable(False, False)
         self.iconbitmap("Assets/ball_icon.ico")
         self.title("Baseball Scoring System")
         loadfont("fonts/Airstrike Academy.ttf")
@@ -279,11 +282,17 @@ class Settings(ctk.CTkFrame):
         table.save(xlfile)
 
         controller.show_frame("GameScore")
+
         global homeTeamName
         homeTeamName = HomeName
         global awayTeamName
         awayTeamName = AwayName
 
+        BattingTeam.configure(values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=200)
+        BattingTeam.set(f"Away Team ({awayTeamName})")
+        BattingTeam.configure(state="disabled") #setting value of comboBox while disabled will not work
+        batText.configure(text=f"Away Team ({awayTeamName})")
+        fldText.configure(text=f"Home Team ({homeTeamName})")
         batterEntry.configure(values=AwayMembers)
         batterEntry.set(AwayMembers[0])
         fieldEntry.configure(values=HomeMembers)
@@ -298,6 +307,10 @@ class GameScore(ctk.CTkFrame):
         homeTeamName = ""
         global awayTeamName
         awayTeamName = ""
+
+        global BattingTeam
+        global batText
+        global fldText
 
         inningNum = tk.StringVar()
         inningNum.set(1)
@@ -328,11 +341,10 @@ class GameScore(ctk.CTkFrame):
         BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
         BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=200)
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=400)
         BattingTeam.set(f"Away Team ({awayTeamName})")
-        BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
-        BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry, fieldEntry))
+        BattingTeam.configure(command=lambda e: self.updateTeams(batterEntry, fieldEntry))
 
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
@@ -365,6 +377,9 @@ class GameScore(ctk.CTkFrame):
         AllFld.columnconfigure(3, weight=2)
         AllFld.columnconfigure(4, weight=3)
         AllFld.columnconfigure(5, weight=1)
+        AllFld.columnconfigure(6, weight=2)
+        AllFld.columnconfigure(7, weight=2)
+        AllFld.columnconfigure(8, weight=2)
 
         batText = ctk.CTkLabel(AllBat, text=BattingTeam.get(), font=controller.fontB1)
         batText.grid(row=0, column=0, columnspan=9, sticky=tk.W+tk.E,
@@ -380,7 +395,7 @@ class GameScore(ctk.CTkFrame):
         batterEntry = ctk.CTkComboBox(AllBat)
         batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
         batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=30)
-        subButton = ctk.CTkButton(AllBat, text="Substitute Batter", font=controller.fontB3)
+        subButton = ctk.CTkButton(AllBat, text="Substitute Batter", font=controller.fontB3, width=100)
         subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=30)
 
         runs = tk.StringVar()
@@ -444,6 +459,8 @@ class GameScore(ctk.CTkFrame):
         fieldEntry = ctk.CTkComboBox(AllFld)
         fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
         fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
+        blankLbl = ctk.CTkLabel(AllFld, text="", width=120)
+        blankLbl.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
         balls = tk.StringVar()
         balls.set(0)
@@ -517,7 +534,7 @@ class GameScore(ctk.CTkFrame):
         else:
             BattingTeam.configure(state="disabled")
 
-    def updateTeams(self, BattingTeam, batText, fldText, batterName, fieldName):
+    def updateTeams(self, batterName, fieldName):
         batOld=batText.cget("text")
         text=BattingTeam.get()
         if batOld != text:
