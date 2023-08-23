@@ -52,12 +52,12 @@ class Win(ctk.CTk):
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.geometry("1280x720")
-        self.resizable(width=False, height=False)
+       
         self.iconbitmap("Assets/ball_icon.ico")
         self.title("Baseball Scoring System")
-        loadfont("Airstrike Academy.ttf")
-        loadfont("Venus Plant.ttf")
-        loadfont("Metropolis-Regular.otf")
+        loadfont("fonts/Airstrike Academy.ttf")
+        loadfont("fonts/Venus Plant.ttf")
+        loadfont("fonts/Metropolis-Regular.otf")
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
         self.fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
         # fontH3 = 
@@ -129,6 +129,8 @@ class Lineups(ctk.CTkFrame):
         HomeEntries = []
         global AwayEntries 
         AwayEntries = []
+        global Name1Ent
+        global Name2Ent
 
         tLT1 = ctk.CTkFrame(self, fg_color=bgClr)
         tLT2 = ctk.CTkFrame(self, fg_color=bgClr)
@@ -206,6 +208,10 @@ class Lineups(ctk.CTkFrame):
             AwayMembers = []
             for entry in AwayEntries:
                 AwayMembers.append(entry.get())
+            global HomeName
+            HomeName = Name1Ent.get()
+            global AwayName
+            AwayName = Name2Ent.get()
             print(AwayMembers)
             controller.show_frame("Settings")
 
@@ -231,11 +237,53 @@ class Settings(ctk.CTkFrame):
         playerScores = bsbTrack.add_worksheet()
         bsbTrack.close()
 
-        print(fileName)
+        global table
+        global sheet
 
+        table = openpx.load_workbook(xlfile)
+        sheet = table.active
+        sheet.title = "playerScores"
 
+        for column in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"]:
+            sheet.column_dimensions[column].width = 15
+
+        tableTemplate = [
+            ["Home Team", HomeName, "", "", "", "", "", "Away Team", AwayName],
+            ["", "", "", "", "", "", "", ""],
+            ["Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls", "", "Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls"],
+            [1, "", "", "", "", "", "", 1],
+            [2, "", "", "", "", "", "", 2],
+            [3, "", "", "", "", "", "", 3],
+            [4, "", "", "", "", "", "", 4],
+            [5, "", "", "", "", "", "", 5],
+            [6, "", "", "", "", "", "", 6],
+            [7, "", "", "", "", "", "", 7],
+            [8, "", "", "", "", "", "", 8],
+            [9, "", "", "", "", "", "", 9],
+            ["", "", "", "", "", "", "", ""],
+            ["Team Total", "", "", "", "", "", "", "Team Total"],
+        ]
+        for row in tableTemplate:
+            sheet.append(row)
+
+        for player in HomeMembers:
+            index = HomeMembers.index(player)
+            cell = f"B{index+4}"
+            sheet[cell] = player
+        
+        for player in AwayMembers:
+            index = AwayMembers.index(player)
+            cell = f"I{index+4}"
+            sheet[cell] = player
+
+        table.save(xlfile)
 
         controller.show_frame("GameScore")
+        global homeTeamName
+        homeTeamName = HomeName
+        global awayTeamName
+        awayTeamName = AwayName
+
         batterEntry.configure(values=AwayMembers)
         batterEntry.set(AwayMembers[0])
         fieldEntry.configure(values=HomeMembers)
@@ -244,12 +292,12 @@ class Settings(ctk.CTkFrame):
 
 
 class GameScore(ctk.CTkFrame):
-    homeTeamName = "Team 1"
-    awayTeamName = "Team 2"
 
     def __init__(self, parent, controller):
-        HomeMembers = [""]
-        AwayMembers = [""]
+        global homeTeamName
+        homeTeamName = ""
+        global awayTeamName
+        awayTeamName = ""
 
         inningNum = tk.StringVar()
         inningNum.set(1)
@@ -280,8 +328,8 @@ class GameScore(ctk.CTkFrame):
         BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
         BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({self.homeTeamName})", f"Away Team ({self.awayTeamName})"], width=200)
-        BattingTeam.set(f"Away Team ({self.awayTeamName})")
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=200)
+        BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.configure(state="disabled") #disabling before setting the value of the ComboBox will leave the selected value as blank
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
         BattingTeam.configure(command=lambda e: self.updateTeams(BattingTeam, batText, fldText, batterEntry, fieldEntry))
@@ -321,7 +369,7 @@ class GameScore(ctk.CTkFrame):
         batText = ctk.CTkLabel(AllBat, text=BattingTeam.get(), font=controller.fontB1)
         batText.grid(row=0, column=0, columnspan=9, sticky=tk.W+tk.E,
                     pady=20)
-        fldText = ctk.CTkLabel(AllFld, text=f"Fielding Team ({self.homeTeamName})", font=controller.fontB1)
+        fldText = ctk.CTkLabel(AllFld, text=f"Fielding Team ({homeTeamName})", font=controller.fontB1)
         fldText.grid(row=0, column=0, columnspan=9, sticky=tk.W+tk.E,
                     pady=20)
 
@@ -475,7 +523,7 @@ class GameScore(ctk.CTkFrame):
         if batOld != text:
             batText.configure(text=text)
             fldText.configure(text=batOld)
-            if text == f"Home Team ({self.homeTeamName})":
+            if text == f"Home Team ({homeTeamName})":
                 batterName.configure(values=HomeMembers)
                 batterName.set(HomeMembers[0])
                 fieldName.configure(values=AwayMembers)
@@ -485,7 +533,6 @@ class GameScore(ctk.CTkFrame):
                 batterName.set(AwayMembers[0])
                 fieldName.configure(values=HomeMembers)
                 fieldName.set(HomeMembers[0])
-
 
 
 app = Win()
