@@ -16,24 +16,13 @@ try:
 except ImportError: #for testing on mac, windll does not work on mac, disables the fonts on mac
     pass
 
+global bgClr
+bgClr = "#212121" #background colour used for the GUI
 
-bgClr = "#212121"
+# this function loads in fonts from the /fontpath folder, taken from stackoverflow forums.
 
 def loadfont(fontpath, private=True, enumerable=False):
-    '''
-    Makes fonts located in file `fontpath` available to the font system.
-
-    `private`     if True, other processes cannot see this font, and this
-                  font will be unloaded when the process dies
-    `enumerable`  if True, this font will appear when enumerating fonts
-
-    See https://msdn.microsoft.com/en-us/library/dd183327(VS.85).aspx
-
-    '''
-    # This function was taken from
-    # https://github.com/ifwe/digsby/blob/f5fe00244744aa131e07f09348d10563f3d8fa99/digsby/src/gui/native/win/winfonts.py#L15
-    # This function is written for Python 2.x. For 3.x, you
-    # have to convert the isinstance checks to bytes and str
+    
     try: #for testing on mac, windll does not work on mac, disables the fonts on mac
         if isinstance(fontpath, bytes):
             pathbuf = create_string_buffer(fontpath)
@@ -50,33 +39,35 @@ def loadfont(fontpath, private=True, enumerable=False):
     except: #for testing on mac, windll does not work on mac, disables the fonts on mac
         pass
 
-class Win(ctk.CTk):
+# root window class
+class Win(ctk.CTk): 
 
     def __init__(self, *args, **kwargs):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.geometry("1280x720")
-        self.resizable(False, False)
-        self.iconbitmap("Assets/ball_icon.ico")
-        self.title("Baseball Scoring System")
+        self.resizable(False, False) #fixed window size
+        self.iconbitmap("Assets/ball_icon.ico") #application icon
+        self.title("Baseball Scoring System") #window name
+        #function allows custom fonts to be used
         loadfont("fonts/Airstrike Academy.ttf")
         loadfont("fonts/Venus Plant.ttf")
         loadfont("fonts/Metropolis-Regular.otf")
+        #loading all fonts to be used in the GUI
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
         self.fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
-        # fontH3 = 
         self.fontB1 = ctk.CTkFont(family="Franklin Gothic", size=18)
         self.fontB2 = ctk.CTkFont(family="Cooper Black", size=24)
         self.fontB3 = ctk.CTkFont(family="Metropolis", size=15)
 
         # initialise window
         ctk.set_appearance_mode("Dark")
-        ctk.set_default_color_theme("dark-blue")
-        self.bgClr = "#212121"
-        app = ctk.CTkFrame(self, fg_color=self.bgClr)
+        ctk.set_default_color_theme("dark-blue") #theme of window
+        app = ctk.CTkFrame(self, fg_color=bgClr) #first frame, fills root window, parent of all other frames/screens
         app.pack(side="top", fill="both", expand=True)
         app.grid_rowconfigure(0, weight=1)
         app.grid_columnconfigure(0, weight=1)
 
+        # packs all frames/screens to app frame
         self.frames = {}
         for F in (StartScreen, Lineups, Settings, GameScore):
             page_name = F.__name__
@@ -84,20 +75,22 @@ class Win(ctk.CTk):
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
         
+        # shows startscreen first (when __init__ runs)
         self.show_frame("StartScreen")
     
+    # brings the parsed frame to the top (ie changes the displayed screen)
     def show_frame (self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
     
 
-# main menu screen
+# main menu screen class
 class StartScreen(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        MMFrame = ctk.CTkFrame(self, fg_color=bgClr)
+        MMFrame = ctk.CTkFrame(self, fg_color=bgClr) #menu frame with Title and Menu Buttons (to the left of Main Menu Screen)
         # title
         MMTitle = ctk.CTkLabel(MMFrame, text="BASEBALL\nSTAT\nTRACKER", font=controller.fontH1, bg_color=bgClr)
         MMTitle.pack(padx=30, pady=30)
@@ -123,21 +116,21 @@ class StartScreen(ctk.CTkFrame):
         if close == True:
             self.quit()
 
-
+# Team Lineup Input Screen Class
 class Lineups(ctk.CTkFrame):
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        global HomeEntries 
+        global HomeEntries #list of Home Team Player Entry Widgets, used to retrieve Player Names
         HomeEntries = []
-        global AwayEntries 
+        global AwayEntries #list of Away Team Player Entry Widgets, used to retrieve Player Names
         AwayEntries = []
-        global Name1Ent
-        global Name2Ent
+        global Name1Ent #Home Team Name Widget, used to retrieve Home Team Name
+        global Name2Ent #Away Team Name Widget, used to retrieve Away Team Name
 
-        tLT1 = ctk.CTkFrame(self, fg_color=bgClr)
-        tLT2 = ctk.CTkFrame(self, fg_color=bgClr)
-        tLMid = ctk.CTkFrame(self, fg_color=bgClr)
+        tLT1 = ctk.CTkFrame(self, fg_color=bgClr) #Frame, packs Home Team Entries to the left side of the screen
+        tLT2 = ctk.CTkFrame(self, fg_color=bgClr) #Frame, packs Away Team Entries to the right side of the screen
+        tLMid = ctk.CTkFrame(self, fg_color=bgClr) #Frame, separates the left and right sides of the screen, has change screen button
 
         tLT1.columnconfigure(0, weight=1)
         tLT1.columnconfigure(1, weight=1)
@@ -360,7 +353,7 @@ class GameScore(ctk.CTkFrame):
         tabview.set("All")
 
         #All Tab
-        AllBat = ctk.CTkFrame(allTab, fg_color="#b00b13")
+        AllBat = ctk.CTkFrame(allTab, fg_color=bgClr)
         AllBat.columnconfigure(0, weight=2)
         AllBat.columnconfigure(1, weight=3)
         AllBat.columnconfigure(2, weight=1)
@@ -370,7 +363,7 @@ class GameScore(ctk.CTkFrame):
         AllBat.columnconfigure(6, weight=2)
         AllBat.columnconfigure(7, weight=2)
         AllBat.columnconfigure(8, weight=2)
-        AllFld = ctk.CTkFrame(allTab, fg_color="#069420")
+        AllFld = ctk.CTkFrame(allTab, fg_color=bgClr)
         AllFld.columnconfigure(0, weight=2)
         AllFld.columnconfigure(1, weight=3)
         AllFld.columnconfigure(2, weight=1)
