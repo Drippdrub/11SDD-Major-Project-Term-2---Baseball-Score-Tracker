@@ -132,7 +132,7 @@ class Lineups(ctk.CTkFrame):
         tLT2 = ctk.CTkFrame(self, fg_color=bgClr) #Frame, packs Away Team Entries to the right side of the screen
         tLMid = ctk.CTkFrame(self, fg_color=bgClr) #Frame, separates the left and right sides of the screen, has change screen button
 
-        tLT1.columnconfigure(0, weight=1)
+        tLT1.columnconfigure(0, weight=1) #
         tLT1.columnconfigure(1, weight=1)
         tLT1.columnconfigure(2, weight=1)
 
