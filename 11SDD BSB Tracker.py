@@ -58,8 +58,8 @@ class Win(ctk.CTk):
         self.fontB1 = ctk.CTkFont(family="Franklin Gothic", size=18)
         self.fontB2 = ctk.CTkFont(family="Cooper Black", size=24)
         self.fontB3 = ctk.CTkFont(family="Metropolis", size=15)
+        self.fontB4 = ctk.CTkFont(family="Metropolis", size=13)
 
-        # initialise window
         ctk.set_appearance_mode("Dark")
         ctk.set_default_color_theme("dark-blue") #theme of window
         app = ctk.CTkFrame(self, fg_color=bgClr) #first frame, fills root window, parent of all other frames/screens
@@ -79,7 +79,7 @@ class Win(ctk.CTk):
         self.show_frame("StartScreen")
     
     # brings the parsed frame to the top (ie changes the displayed screen)
-    def show_frame (self, page_name):
+    def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
     
@@ -208,6 +208,20 @@ class Lineups(ctk.CTkFrame):
             HomeName = Name1Ent.get()
             global AwayName
             AwayName = Name2Ent.get()
+            if HomeName=="" or AwayName=="":
+                msgbox.showerror(title="Error",
+                                     message="The Team Name entry fields are empty.\nPlease check that all fields have been filled in.")
+                return
+            for member in HomeMembers:
+                if member=="":
+                    msgbox.showerror(title="Error",
+                                     message="One or more entry fields under Team 1 are empty.\nPlease check that all fields have been filled in.")
+                    return
+            for member in AwayMembers:
+                if member=="":
+                    msgbox.showerror(title="Error",
+                                     message="One or more entry fields under Team 2 are empty.\nPlease check that all fields have been filled in.")
+                    return
             print(AwayMembers)
             controller.show_frame("Settings")
 
@@ -219,10 +233,12 @@ class Settings(ctk.CTkFrame):
 
         fileName = tk.StringVar()
 
-        fileNameLbl = ctk.CTkLabel(settingFrame, text="File Name:")
+        fileNameLbl = ctk.CTkLabel(settingFrame, text="Excel File Name:")
         fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
         fileNameLbl.grid(row=0, column=0, padx=10, pady=10)
         fileNameEnt.grid(row=0, column=1, padx=10, pady=10)
+        fileInfoLbl = ctk.CTkLabel(self, text="Game results will be automatically\noutput to an excel worksheet in\nthe directory of this program.")
+        fileInfoLbl.place(relx=0.75, rely=0.45)
 
         global gameLength
         gameLengthLbl = ctk.CTkLabel(settingFrame, text="Select A Game Length:")
@@ -240,6 +256,8 @@ class Settings(ctk.CTkFrame):
     
     def openGamescore(self, controller, fileName):
         if fileName=="":
+            msgbox.showerror(title="Error",
+                                     message="An excel filename has not been selected.\nPlease check you have given a filename.")
             return
         if gameLength==0:
             return
@@ -260,32 +278,30 @@ class Settings(ctk.CTkFrame):
             sheet.column_dimensions[column].width = 15
 
         tableTemplate = [
-            ["Home Team", HomeName, "", "", "", "", "", "Away Team", AwayName],
-            ["", "", "", "", "", "", "", ""],
+            ["Home Team", HomeName, "", "", "", "", "Away Team", AwayName, "", "", ""],
             ["Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls", "", "Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls"],
-            [1, "", "", "", "", "", "", 1],
-            [2, "", "", "", "", "", "", 2],
-            [3, "", "", "", "", "", "", 3],
-            [4, "", "", "", "", "", "", 4],
-            [5, "", "", "", "", "", "", 5],
-            [6, "", "", "", "", "", "", 6],
-            [7, "", "", "", "", "", "", 7],
-            [8, "", "", "", "", "", "", 8],
-            [9, "", "", "", "", "", "", 9],
-            ["", "", "", "", "", "", "", ""],
-            ["Team Total", "", "", "", "", "", "", "Team Total"],
+            [1, "", 0, 0, 0, 0, "", 1, "", 0, 0, 0, 0],
+            [2, "", 0, 0, 0, 0, "", 2, "", 0, 0, 0, 0],
+            [3, "", 0, 0, 0, 0, "", 3, "", 0, 0, 0, 0],
+            [4, "", 0, 0, 0, 0, "", 4, "", 0, 0, 0, 0],
+            [5, "", 0, 0, 0, 0, "", 5, "", 0, 0, 0, 0],
+            [6, "", 0, 0, 0, 0, "", 6, "", 0, 0, 0, 0],
+            [7, "", 0, 0, 0, 0, "", 7, "", 0, 0, 0, 0],
+            [8, "", 0, 0, 0, 0, "", 8, "", 0, 0, 0, 0],
+            [9, "", 0, 0, 0, 0, "", 9, "", 0, 0, 0, 0],
+            ["Team Total", "", "", "", "", "", "", "Team Total", "", "", "", "", ""],
         ]
         for row in tableTemplate:
             sheet.append(row)
 
         for player in HomeMembers:
             index = HomeMembers.index(player)
-            cell = f"B{index+4}"
+            cell = f"B{index+3}"
             sheet[cell] = player
         
         for player in AwayMembers:
             index = AwayMembers.index(player)
-            cell = f"I{index+4}"
+            cell = f"I{index+3}"
             sheet[cell] = player
 
         table.save(xlfile)
@@ -359,7 +375,7 @@ class GameScore(ctk.CTkFrame):
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
         devOptions.grid(row=0, column=5, rowspan=2, padx=15)
 
-        tabview = ctk.CTkTabview(master=self)
+        tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTabs())
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
         allTab = tabview.add("All")
@@ -468,7 +484,7 @@ class GameScore(ctk.CTkFrame):
         fieldEntry = ctk.CTkComboBox(AllFld)
         fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
         fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
-        blankLbl = ctk.CTkLabel(AllFld, text="", width=120)
+        blankLbl = ctk.CTkLabel(AllFld, text="", width=145)
         blankLbl.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
         balls = tk.StringVar()
@@ -493,6 +509,32 @@ class GameScore(ctk.CTkFrame):
         AllBat.pack(padx=(10, 5), side=tk.LEFT, fill=tk.BOTH, expand=True)
         AllFld.pack(padx=(5, 10), side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
+        addStatsBtn = ctk.CTkButton(allTab, text="Add Scores to Player", command=lambda: self.addStats())
+        addStatsBtn.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
+
+        #overview Tab
+        global overviewFrame
+        overviewFrame = ctk.CTkFrame(overviewTab)
+        overviewFrame.pack(fill="both", expand=True)
+
+        global overviewTableValues
+        overviewTableValues = []
+        for x in range(12):
+            overviewFrame.columnconfigure(x, weight=1)
+            for y in range(13):
+                overviewFrame.rowconfigure(y, weight=1)
+                if (y==1 and x==0) or (y==7 and x==0):
+                    e=ctk.CTkEntry(overviewFrame,
+                                font=controller.fontB4, corner_radius=0)
+                    e.grid(row=x, column=y, sticky="nsew", columnspan=2)
+                elif (y==2 and x==0) or (y==8 and x==0):
+                    pass
+                else:
+                    e=ctk.CTkEntry(overviewFrame,
+                                font=controller.fontB4, corner_radius=0)
+                    e.grid(row=x, column=y, sticky="nsew")
+                overviewTableValues.append(e)
+                
         
     
     def innCallback(self, sv, old):
@@ -542,6 +584,21 @@ class GameScore(ctk.CTkFrame):
             BattingTeam.configure(state="normal")
         else:
             BattingTeam.configure(state="disabled")
+    
+    def updateTabs(self):
+        #overviewTab updates
+        overviewList = []
+        overviewTable = list(sheet.values)
+        for row in overviewTable:
+            for term in row:
+                overviewList.append(term)
+
+        for cell in overviewTableValues:
+            index = overviewTableValues.index(cell)
+            cell.configure(state="normal")
+            cell.delete(0, tk.END)
+            cell.insert(1, str(overviewList[index]))
+            cell.configure(state="disabled")
 
     def updateTeams(self, batterName, fieldName):
         batOld=batText.cget("text")
@@ -559,6 +616,9 @@ class GameScore(ctk.CTkFrame):
                 batterName.set(AwayMembers[0])
                 fieldName.configure(values=HomeMembers)
                 fieldName.set(HomeMembers[0])
+    
+    def addStats(self):
+        pass
 
 
 app = Win()
