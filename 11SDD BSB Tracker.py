@@ -221,13 +221,29 @@ class Settings(ctk.CTkFrame):
 
         fileNameLbl = ctk.CTkLabel(settingFrame, text="File Name:")
         fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
-        fileNameLbl.grid(row=0, column=0)
-        fileNameEnt.grid(row=0, column=1)
+        fileNameLbl.grid(row=0, column=0, padx=10, pady=10)
+        fileNameEnt.grid(row=0, column=1, padx=10, pady=10)
+
+        global gameLength
+        gameLengthLbl = ctk.CTkLabel(settingFrame, text="Select A Game Length:")
+        gameLengthLbl.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
+
+        gameLength = tk.IntVar(value=0)
+        Int7Btn = ctk.CTkRadioButton(settingFrame, text="Softball Game (7 Innings)", variable= gameLength, value=7)
+        Int9Btn = ctk.CTkRadioButton(settingFrame, text="Baseball Game (9 Innings)", variable= gameLength, value=9)
+        Int7Btn.grid(row=2, column=0, padx=10, pady=10)
+        Int9Btn.grid(row=2, column=1, padx=10, pady=10)
+
         settingButton = ctk.CTkButton(settingFrame, text="Proceed", command=lambda: self.openGamescore(controller, fileNameEnt.get()))
-        settingButton.grid(row=1, column=0, columnspan=2)
-        settingFrame.pack()
+        settingButton.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
+        settingFrame.pack(expand=True, anchor=tk.CENTER)
     
     def openGamescore(self, controller, fileName):
+        if fileName=="":
+            return
+        if gameLength==0:
+            return
+
         xlfile = f"{fileName}.xlsx"
         bsbTrack = xl.Workbook(xlfile)
         playerScores = bsbTrack.add_worksheet()
@@ -497,9 +513,9 @@ class GameScore(ctk.CTkFrame):
         except:
             name = "none"
         if name == "inningNum":
-            if int(var.get()) < 9:
+            if int(var.get()) < gameLength.get():
                 var.set(int(var.get())+1)
-            elif int(var.get()) >= 9:
+            elif int(var.get()) >= gameLength.get():
                 endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
         elif name == "strikes":
             if int(var.get()) < 3:
