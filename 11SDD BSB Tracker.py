@@ -278,7 +278,7 @@ class Settings(ctk.CTkFrame):
             sheet.column_dimensions[column].width = 15
 
         tableTemplate = [
-            ["Home Team", HomeName, "", "", "", "", "Away Team", AwayName, "", "", ""],
+            ["Home Team", HomeName, "", "", "", "", "", "Away Team", AwayName, "", "", "", ""],
             ["Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls", "", "Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls"],
             [1, "", 0, 0, 0, 0, "", 1, "", 0, 0, 0, 0],
             [2, "", 0, 0, 0, 0, "", 2, "", 0, 0, 0, 0],
@@ -366,14 +366,15 @@ class GameScore(ctk.CTkFrame):
         BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
         BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=400)
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=850,
+                                      text_color_disabled="gray84")
         BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
         BattingTeam.configure(command=lambda e: self.updateTeams(batterEntry, fieldEntry))
 
-        devModeOn = ctk.IntVar(value=0)
-        devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
-        devOptions.grid(row=0, column=5, rowspan=2, padx=15)
+        # devModeOn = ctk.IntVar(value=0)
+        # devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
+        # devOptions.grid(row=0, column=5, rowspan=2, padx=15)
 
         tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTabs())
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
@@ -423,6 +424,7 @@ class GameScore(ctk.CTkFrame):
         subButton = ctk.CTkButton(AllBat, text="Substitute Batter", font=controller.fontB3, width=100)
         subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=30)
 
+        global runs
         runs = tk.StringVar()
         runs.set(0)
         runs.trace("w", lambda name, index, mode, runs=runs: self.callback(runs, runsOld))
@@ -441,6 +443,7 @@ class GameScore(ctk.CTkFrame):
         runUp.grid(row=2, column=2, padx=4, pady=2, sticky=tk.W)
         runDown.grid(row=3, column=2, padx=4, pady=2, sticky=tk.W)
 
+        global strikes
         strikes = tk.StringVar()
         strikes.set(0)
         strikes.trace("w", lambda name, index, mode, strikes=strikes: self.callback(strikes, strikesOld))
@@ -452,13 +455,14 @@ class GameScore(ctk.CTkFrame):
         strikeEntry.grid(row=2, rowspan=2, column=4, sticky=tk.W+tk.E, padx=5, pady=10)
         strikeUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(strikes, "strikes"))
+                                command=lambda: self.entAdd(strikes, "strikes", foulBall))
         strikeDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(strikes, "strikes"))
         strikeUp.grid(row=2, column=5, padx=4, pady=2, sticky=tk.W)
         strikeDown.grid(row=3, column=5, padx=4, pady=2, sticky=tk.W)
 
+        global foulBall
         foulBall = tk.StringVar()
         foulBall.set(0)
         foulBall.trace("w", lambda name, index, mode, foulBall=foulBall: self.callback(foulBall, foulBallOld))
@@ -470,7 +474,7 @@ class GameScore(ctk.CTkFrame):
         foulBallEntry.grid(row=4, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         foulBallUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(foulBall, "foulBall"))
+                                command=lambda: self.entAdd(foulBall, "foulBall", strikes))
         foulBallDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(foulBall, "foulBall"))
@@ -487,6 +491,7 @@ class GameScore(ctk.CTkFrame):
         blankLbl = ctk.CTkLabel(AllFld, text="", width=145)
         blankLbl.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
+        global balls
         balls = tk.StringVar()
         balls.set(0)
         balls.trace("w", lambda name, index, mode, balls=balls: self.callback(balls, ballsOld))
@@ -523,11 +528,11 @@ class GameScore(ctk.CTkFrame):
             overviewFrame.columnconfigure(x, weight=1)
             for y in range(13):
                 overviewFrame.rowconfigure(y, weight=1)
-                if (y==1 and x==0) or (y==7 and x==0):
+                if (y==1 and x==0) or (y==8 and x==0):
                     e=ctk.CTkEntry(overviewFrame,
                                 font=controller.fontB4, corner_radius=0)
                     e.grid(row=x, column=y, sticky="nsew", columnspan=2)
-                elif (y==2 and x==0) or (y==8 and x==0):
+                elif (y==2 and x==0) or (y==9 and x==0):
                     pass
                 else:
                     e=ctk.CTkEntry(overviewFrame,
@@ -552,18 +557,34 @@ class GameScore(ctk.CTkFrame):
     def entAdd(self, var, *names):
         try:
             name = names[0]
+            var2 = int(names[1].get())
         except:
             name = "none"
+            var2 = 0
         if name == "inningNum":
             if int(var.get()) < gameLength.get():
                 var.set(int(var.get())+1)
             elif int(var.get()) >= gameLength.get():
                 endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
         elif name == "strikes":
-            if int(var.get()) < 3:
+            if int(var.get())+var2 < 2:
                 var.set(int(var.get())+1)
-            elif int(var.get()) >= 3:
-                var.set(0)
+            elif int(var.get())+var2 >= 2:
+                strikeOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
+                if strikeOut:
+                    var.set(int(var.get())+1)
+                    self.changeBatter()
+        elif name == "foulBall":
+            if var2==2:
+                foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
+                if foulOut:
+                    var.set(int(var.get())+1)
+            elif var2==1 and int(var.get())==1:
+                foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
+                if foulOut:
+                    var.set(int(var.get())+1)
+            else:
+                var.set(int(var.get())+1)
         else:
             var.set(int(var.get())+1)
 
@@ -578,6 +599,20 @@ class GameScore(ctk.CTkFrame):
         else:
             if int(var.get()) > 0:
                 var.set(int(var.get())-1)
+
+    def changeBatter(self):
+        try:
+            batterEntry.set(batterEntry.cget("values")[batterEntry.cget("values").index(batterEntry.get())+1])
+            runs.set(0)
+            strikes.set(0)
+            foulBall.set(0)
+            balls.set(0)
+
+        except IndexError:
+            self.swapSides()
+    
+    def swapSides():
+        pass
 
     def updateDevMode(self, devOptions, BattingTeam):
         if devOptions.get() == 1:
