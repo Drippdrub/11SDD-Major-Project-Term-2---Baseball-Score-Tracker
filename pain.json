@@ -1,0 +1,113 @@
+{
+ "version": "auto-py-to-exe-configuration_v1",
+ "pyinstallerOptions": [
+  {
+   "optionDest": "noconfirm",
+   "value": true
+  },
+  {
+   "optionDest": "filenames",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/11SDD BSB Tracker.py"
+  },
+  {
+   "optionDest": "onefile",
+   "value": true
+  },
+  {
+   "optionDest": "console",
+   "value": true
+  },
+  {
+   "optionDest": "icon_file",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/ball_icon.ico"
+  },
+  {
+   "optionDest": "ascii",
+   "value": false
+  },
+  {
+   "optionDest": "clean_build",
+   "value": false
+  },
+  {
+   "optionDest": "strip",
+   "value": false
+  },
+  {
+   "optionDest": "noupx",
+   "value": false
+  },
+  {
+   "optionDest": "disable_windowed_traceback",
+   "value": false
+  },
+  {
+   "optionDest": "embed_manifest",
+   "value": true
+  },
+  {
+   "optionDest": "uac_admin",
+   "value": false
+  },
+  {
+   "optionDest": "uac_uiaccess",
+   "value": false
+  },
+  {
+   "optionDest": "win_private_assemblies",
+   "value": false
+  },
+  {
+   "optionDest": "win_no_prefer_redirects",
+   "value": false
+  },
+  {
+   "optionDest": "bootloader_ignore_signals",
+   "value": false
+  },
+  {
+   "optionDest": "argv_emulation",
+   "value": false
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/AppData/Roaming/Python/Python311/site-packages/customtkinter;customtkinter/"
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/ball_icon.ico;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/Metropolis-Regular.otf;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/Baseball.png;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/down_arrow.png;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/up_arrow.png;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/Airstrike Academy.ttf;."
+  },
+  {
+   "optionDest": "datas",
+   "value": "C:/Users/aaron/Desktop/NotTheDesktop/Other/github/11SDD Major Project Term 2 - Baseball Score Tracker/Venus Plant.ttf;."
+  },
+  {
+   "optionDest": "hiddenimports",
+   "value": ""
+  }
+ ],
+ "nonPyinstallerOptions": {
+  "increaseRecursionLimit": true,
+  "manualArguments": ""
+ }
+}

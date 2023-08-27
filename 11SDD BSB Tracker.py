@@ -3,7 +3,7 @@ import tkinter as tk
 from tkinter import messagebox as msgbox
 import customtkinter as ctk
 # Image Library
-from PIL import Image, ImageTk
+from PIL import Image
 # Excel Read/Write Libraries
 import xlsxwriter as xl
 import openpyxl as openpx
@@ -11,9 +11,20 @@ import openpyxl as openpx
 import excel2img
 # OS
 import os
+import sys
 
 if os.path.exists("./Game Results")==False:
     os.mkdir("./Game Results")
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
 
 # ctypes used solely for the purpose of imp[orting custom fonts
 try:
@@ -53,12 +64,12 @@ class Win(ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
         self.geometry("1280x720")
         self.resizable(False, False) #fixed window size
-        self.iconbitmap("Assets/ball_icon.ico") #application icon
+        self.iconbitmap(resource_path("ball_icon.ico")) #application icon
         self.title("Baseball Scoring System") #window name
         #function allows custom fonts to be used
-        loadfont("fonts/Airstrike Academy.ttf")
-        loadfont("fonts/Venus Plant.ttf")
-        loadfont("fonts/Metropolis-Regular.otf")
+        loadfont(resource_path("Airstrike Academy.ttf"))
+        loadfont(resource_path("Venus Plant.ttf"))
+        loadfont(resource_path("Metropolis-Regular.otf"))
         #loading all fonts to be used in the GUI
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
         self.fontH11 = ctk.CTkFont(family="Airstrike Academy", size=55)
@@ -114,7 +125,7 @@ class StartScreen(ctk.CTkFrame):
         MMFrame.pack(padx=50, side=tk.LEFT)
 
         # main menu image
-        MMImage = ctk.CTkImage(dark_image=Image.open("Assets/Baseball.png"), size=(400, 400))
+        MMImage = ctk.CTkImage(dark_image=Image.open(resource_path("Baseball.png")), size=(400, 400))
         MMImgObj = ctk.CTkLabel(self, image=MMImage, text="")
         MMImgObj.pack(padx=50, side=tk.RIGHT)
     
@@ -358,8 +369,8 @@ class GameScore(ctk.CTkFrame):
         
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
-        upArrow = ctk.CTkImage(dark_image=Image.open("Assets/up_arrow.png"), size=(10, 10))
-        downArrow = ctk.CTkImage(dark_image=Image.open("Assets/down_arrow.png"), size=(10, 10))
+        upArrow = ctk.CTkImage(dark_image=Image.open(resource_path("up_arrow.png")), size=(10, 10))
+        downArrow = ctk.CTkImage(dark_image=Image.open(resource_path("down_arrow.png")), size=(10, 10))
 
         topFrame = ctk.CTkFrame(master=self)        
         topFrame.pack(padx=20, pady=10, fill=tk.X)
@@ -397,6 +408,10 @@ class GameScore(ctk.CTkFrame):
         overviewTab = tabview.add("Game Overview")
         tabview.set("All")
 
+        allTab.grid_columnconfigure(0, weight=1)
+        allTab.grid_columnconfigure(1, weight=1)
+        allTab.grid_rowconfigure(0, weight=1)
+
         #All Tab
         AllBat = ctk.CTkFrame(allTab, fg_color=bgClr)
         AllBat.columnconfigure(0, weight=2)
@@ -432,9 +447,9 @@ class GameScore(ctk.CTkFrame):
         batterName = ctk.CTkLabel(AllBat, text="Batter:", font=controller.fontB3)
         batterEntry = ctk.CTkComboBox(AllBat)
         batterName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
-        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=10, pady=30)
-        subButton = ctk.CTkButton(AllBat, text="Substitute Batter", font=controller.fontB3, width=100)
-        subButton.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=(10, 20), pady=30)
+        batterEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
+        blankLbl = ctk.CTkLabel(AllBat, text="", width=100)
+        blankLbl.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
         global runs
         runs = tk.StringVar()
@@ -507,8 +522,8 @@ class GameScore(ctk.CTkFrame):
         fieldEntry = ctk.CTkComboBox(AllFld)
         fieldName.grid(row=1, column=0, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
         fieldEntry.grid(row=1, column=3, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
-        blankLbl = ctk.CTkLabel(AllFld, text="", width=145)
-        blankLbl.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
+        blankLbl2 = ctk.CTkLabel(AllFld, text="", width=130)
+        blankLbl2.grid(row=1, column=6, columnspan=3, sticky=tk.W+tk.E, padx=20, pady=30)
 
         global balls
         balls = tk.StringVar()
@@ -529,9 +544,10 @@ class GameScore(ctk.CTkFrame):
         ballUp.grid(row=2, column=2, padx=4, pady=2, sticky=tk.W)
         ballDown.grid(row=3, column=2, padx=4, pady=2, sticky=tk.W)
 
-
-        AllBat.pack(padx=(10, 5), side=tk.LEFT, fill=tk.BOTH, expand=True)
-        AllFld.pack(padx=(5, 10), side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        AllBat.grid(row=0, column=0, sticky="nsew", padx=5)
+        AllFld.grid(row=0, column=1, sticky="nsew", padx=5)
+        # AllBat.pack(padx=(10, 5), side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # AllFld.pack(padx=(5, 10), side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
         addStatsBtn = ctk.CTkButton(allTab, text="Add Scores to Player", command=lambda: self.changeBatter(controller))
         addStatsBtn.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
@@ -822,8 +838,11 @@ class GameEnd(ctk.CTkFrame):
         closeBtn.grid(row=3, column=1, padx=5, pady=15, sticky=tk.W)
     
     def exportAsImg(self):  
-        excel2img.export_img(xlfile,f"Game Results/{fileTitle}.png", "", "playerScores!A1:M12")
-        msgbox.showinfo(title="Image Successfully Created", message="Excel file has been turned into an image file.")
+        try:
+            excel2img.export_img(xlfile,f"Game Results/{fileTitle}.png", "", "playerScores!A1:M14")
+            msgbox.showinfo(title="Image Successfully Created", message="Excel file has been turned into an image file.")
+        except OSError:
+            msgbox.showinfo(title="Image Creation Failed", message="Excel file could not be turned into an image file.\nYou can take a screenshot of this page.")
     
     def destroyRequest(self):
         close = msgbox.askyesno(title="Closing Program", message="Are you sure you want to exit the program?")
