@@ -489,7 +489,7 @@ class GameScore(ctk.CTkFrame):
         battersOut = 0
         global batOutText
         batOutText = ctk.CTkLabel(AllBat, text=f"Batters Out: {battersOut}", font=controller.fontB3)
-        batOutText.grid(row=2, rowspan=2, column=3, sticky=tk.E, padx=10, pady=10)
+        batOutText.grid(row=4, rowspan=2, column=3, sticky=tk.E, padx=10, pady=10)
         
 
         # All Tab Fielding Frame
@@ -567,6 +567,7 @@ class GameScore(ctk.CTkFrame):
 
     def entAdd(self, var, *names):
         try:
+            global battersOut
             name = names[0]
             var2 = int(names[1].get())
         except:
@@ -584,7 +585,6 @@ class GameScore(ctk.CTkFrame):
                 strikeOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if strikeOut:
                     var.set(int(var.get())+1)
-                    global battersOut
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
                     self.changeBatter()
@@ -593,7 +593,6 @@ class GameScore(ctk.CTkFrame):
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if foulOut:
                     var.set(int(var.get())+1)
-                    global battersOut
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
                     self.changeBatter()
@@ -601,7 +600,6 @@ class GameScore(ctk.CTkFrame):
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if foulOut:
                     var.set(int(var.get())+1)
-                    global battersOut
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
                     self.changeBatter()
@@ -623,6 +621,7 @@ class GameScore(ctk.CTkFrame):
                 var.set(int(var.get())-1)
 
     def changeBatter(self):
+    
         index = batterEntry.cget("values").index(batterEntry.get())
         playerCell="A1"
         if BattingTeam.get()==f"Away Team ({awayTeamName})":
@@ -645,12 +644,22 @@ class GameScore(ctk.CTkFrame):
         strikes.set(0)
         foulBall.set(0)
         balls.set(0)
+
+        
+        global battersOut
+        if battersOut >= 3:
+            msgbox.showinfo(title="Swapping Sides", message="Teams will now swap sides.")
+            battersOut = 0
+            batOutText.configure(text=f"Batters Out: {battersOut}")
+            self.swapSides()
+
         try:
             batterEntry.set(batterEntry.cget("values")[index+1])
         except IndexError:
-            self.swapSides()
+            batterEntry.set(batterEntry.cget("values")[0])
     
     def swapSides(self):
+
         BattingTeam.configure(state="normal")
         if BattingTeam.get()==f"Away Team ({awayTeamName})":
             BattingTeam.set(f"Home Team ({homeTeamName})")
