@@ -376,8 +376,8 @@ class GameScore(ctk.CTkFrame):
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
         BattingTeam.configure(command=lambda e: self.updateTeams(batterEntry, fieldEntry))
 
-        # devModeOn = ctk.IntVar(value=0)
-        # devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
+        devModeOn = ctk.IntVar(value=0)
+        devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
         # devOptions.grid(row=0, column=7, rowspan=2, padx=15)
 
         tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTabs())
@@ -485,6 +485,13 @@ class GameScore(ctk.CTkFrame):
         foulBallUp.grid(row=4, column=2, padx=4, pady=3, sticky=tk.W+tk.S)
         foulBallDown.grid(row=5, column=2, padx=4, pady=3, sticky=tk.W+tk.N)
 
+        global battersOut
+        battersOut = 0
+        global batOutText
+        batOutText = ctk.CTkLabel(AllBat, text=f"Batters Out: {battersOut}", font=controller.fontB3)
+        batOutText.grid(row=2, rowspan=2, column=3, sticky=tk.E, padx=10, pady=10)
+        
+
         # All Tab Fielding Frame
         global fieldEntry
 
@@ -577,16 +584,27 @@ class GameScore(ctk.CTkFrame):
                 strikeOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if strikeOut:
                     var.set(int(var.get())+1)
+                    global battersOut
+                    battersOut += 1
+                    batOutText.configure(text=f"Batters Out: {battersOut}")
                     self.changeBatter()
         elif name == "foulBall":
             if var2==2:
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if foulOut:
                     var.set(int(var.get())+1)
+                    global battersOut
+                    battersOut += 1
+                    batOutText.configure(text=f"Batters Out: {battersOut}")
+                    self.changeBatter()
             elif var2==1 and int(var.get())==1:
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if foulOut:
                     var.set(int(var.get())+1)
+                    global battersOut
+                    battersOut += 1
+                    batOutText.configure(text=f"Batters Out: {battersOut}")
+                    self.changeBatter()
             else:
                 var.set(int(var.get())+1)
         else:
