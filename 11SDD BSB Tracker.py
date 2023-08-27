@@ -7,6 +7,8 @@ from PIL import Image, ImageTk
 # Excel Read/Write Libraries
 import xlsxwriter as xl
 import openpyxl as openpx
+# Excel To Image Converter
+import excel2img
 
 # ctypes used solely for the purpose of imp[orting custom fonts
 try:
@@ -54,6 +56,7 @@ class Win(ctk.CTk):
         loadfont("fonts/Metropolis-Regular.otf")
         #loading all fonts to be used in the GUI
         self.fontH1 = ctk.CTkFont(family="Airstrike Academy", size=72)
+        self.fontH11 = ctk.CTkFont(family="Airstrike Academy", size=55)
         self.fontH2 = ctk.CTkFont(family="Venus Plant", size=32)
         self.fontB1 = ctk.CTkFont(family="Franklin Gothic", size=18)
         self.fontB2 = ctk.CTkFont(family="Cooper Black", size=24)
@@ -69,7 +72,7 @@ class Win(ctk.CTk):
 
         # packs all frames/screens to app frame
         self.frames = {}
-        for F in (StartScreen, Lineups, Settings, GameScore):
+        for F in (StartScreen, Lineups, Settings, GameScore, GameEnd):
             page_name = F.__name__
             frame = F(parent=app, controller=self)
             self.frames[page_name] = frame
@@ -222,7 +225,6 @@ class Lineups(ctk.CTkFrame):
                     msgbox.showerror(title="Error",
                                      message="One or more entry fields under Team 2 are empty.\nPlease check that all fields have been filled in.")
                     return
-            print(AwayMembers)
             controller.show_frame("Settings")
 
 class Settings(ctk.CTkFrame):
@@ -237,7 +239,7 @@ class Settings(ctk.CTkFrame):
         fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
         fileNameLbl.grid(row=0, column=0, padx=10, pady=10)
         fileNameEnt.grid(row=0, column=1, padx=10, pady=10)
-        fileInfoLbl = ctk.CTkLabel(self, text="Game results will be automatically\noutput to an excel worksheet in\nthe directory of this program.")
+        fileInfoLbl = ctk.CTkLabel(self, text="Game results will be automatically\noutput to an excel worksheet in\nthe 'Game Results' folder.")
         fileInfoLbl.place(relx=0.75, rely=0.45)
 
         global gameLength
@@ -259,10 +261,13 @@ class Settings(ctk.CTkFrame):
             msgbox.showerror(title="Error",
                                      message="An excel filename has not been selected.\nPlease check you have given a filename.")
             return
-        if gameLength==0:
+        if gameLength.get()==0:
             return
 
-        xlfile = f"{fileName}.xlsx"
+        global xlfile
+        global fileTitle
+        fileTitle = fileName
+        xlfile = f"Game Results/{fileName}.xlsx"
         bsbTrack = xl.Workbook(xlfile)
         playerScores = bsbTrack.add_worksheet()
         bsbTrack.close()
@@ -360,7 +365,7 @@ class GameScore(ctk.CTkFrame):
         inningEnt.grid(row=0, column=1, rowspan=2)
         inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(inningNum, "inningNum"))
+                                command=lambda: self.entAdd(inningNum, controller, "inningNum"))
         inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(inningNum, "inningNum"))
@@ -380,12 +385,10 @@ class GameScore(ctk.CTkFrame):
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
         # devOptions.grid(row=0, column=7, rowspan=2, padx=15)
 
-        tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTabs())
+        tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTable())
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
         allTab = tabview.add("All")
-        teamTab1 = tabview.add("Home Team")
-        teamTab2 = tabview.add("Away Team")
         overviewTab = tabview.add("Game Overview")
         tabview.set("All")
 
@@ -440,7 +443,7 @@ class GameScore(ctk.CTkFrame):
         runEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         runUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(runs))
+                                command=lambda: self.entAdd(runs, controller))
         runDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(runs))
@@ -459,7 +462,7 @@ class GameScore(ctk.CTkFrame):
         strikeEntry.grid(row=2, rowspan=2, column=4, sticky=tk.W+tk.E, padx=5, pady=10)
         strikeUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(strikes, "strikes", foulBall))
+                                command=lambda: self.entAdd(strikes, controller, "strikes", foulBall))
         strikeDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(strikes, "strikes"))
@@ -478,7 +481,7 @@ class GameScore(ctk.CTkFrame):
         foulBallEntry.grid(row=4, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         foulBallUp = ctk.CTkButton(master=AllBat, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(foulBall, "foulBall", strikes))
+                                command=lambda: self.entAdd(foulBall, controller, "foulBall", strikes))
         foulBallDown = ctk.CTkButton(master=AllBat, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(foulBall, "foulBall"))
@@ -489,7 +492,7 @@ class GameScore(ctk.CTkFrame):
         battersOut = 0
         global batOutText
         batOutText = ctk.CTkLabel(AllBat, text=f"Batters Out: {battersOut}", font=controller.fontB3)
-        batOutText.grid(row=4, rowspan=2, column=3, sticky=tk.E, padx=10, pady=10)
+        batOutText.grid(row=4, rowspan=2, column=3, columnspan=2, sticky=tk.E, padx=10, pady=10)
         
 
         # All Tab Fielding Frame
@@ -514,7 +517,7 @@ class GameScore(ctk.CTkFrame):
         ballEntry.grid(row=2, rowspan=2, column=1, sticky=tk.W+tk.E, padx=5, pady=10)
         ballUp = ctk.CTkButton(master=AllFld, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
-                                command=lambda: self.entAdd(balls))
+                                command=lambda: self.entAdd(balls, controller, "balls"))
         ballDown = ctk.CTkButton(master=AllFld, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(balls))
@@ -525,8 +528,11 @@ class GameScore(ctk.CTkFrame):
         AllBat.pack(padx=(10, 5), side=tk.LEFT, fill=tk.BOTH, expand=True)
         AllFld.pack(padx=(5, 10), side=tk.RIGHT, fill=tk.BOTH, expand=True)
 
-        addStatsBtn = ctk.CTkButton(allTab, text="Add Scores to Player", command=lambda: self.addStats())
+        addStatsBtn = ctk.CTkButton(allTab, text="Add Scores to Player", command=lambda: self.changeBatter(controller))
         addStatsBtn.place(relx=0.5, rely=0.8, anchor=tk.CENTER)
+
+        earlyStopBtn = ctk.CTkButton(allTab, text="End Game Early", fg_color="#f02d13",command=lambda: self.earlyGameEnd(controller))
+        earlyStopBtn.place(relx=0.8, rely=0.8, anchor=tk.CENTER)
 
         #overview Tab
         global overviewFrame
@@ -536,9 +542,9 @@ class GameScore(ctk.CTkFrame):
         global overviewTableValues
         overviewTableValues = []
         for x in range(12):
-            overviewFrame.columnconfigure(x, weight=1)
+            overviewFrame.rowconfigure(x, weight=1)
             for y in range(13):
-                overviewFrame.rowconfigure(y, weight=1)
+                overviewFrame.columnconfigure(y, weight=1)
                 if (y==1 and x==0) or (y==8 and x==0):
                     e=ctk.CTkEntry(overviewFrame,
                                 font=controller.fontB4, corner_radius=0)
@@ -565,19 +571,31 @@ class GameScore(ctk.CTkFrame):
         else:
             sv.set(old)
 
-    def entAdd(self, var, *names):
+    def entAdd(self, var, controller, *args):
+        global battersOut
         try:
-            global battersOut
-            name = names[0]
-            var2 = int(names[1].get())
+            name = args[0]
         except:
             name = "none"
+        try:
+            var2 = int(args[1].get())
+        except:
             var2 = 0
         if name == "inningNum":
             if int(var.get()) < gameLength.get():
                 var.set(int(var.get())+1)
             elif int(var.get()) >= gameLength.get():
                 endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
+                if endGame:
+                    if sheet["C12"].value == sheet["J12"].value:
+                        var.set(int(var.get())+1)
+                        if int(var.get()) == 8:
+                            msgbox.showinfo(title="Overtime", message="Game has entered overtime.")
+                        else:
+                            msgbox.showinfo(title="Overtime", message="Overtime has continued.")
+                    else:
+                        controller.show_frame("GameEnd")
+                        GameEnd.updateWinScreen(GameEnd)
         elif name == "strikes":
             if int(var.get())+var2 < 2:
                 var.set(int(var.get())+1)
@@ -587,7 +605,7 @@ class GameScore(ctk.CTkFrame):
                     var.set(int(var.get())+1)
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
-                    self.changeBatter()
+                    self.changeBatter(controller)
         elif name == "foulBall":
             if var2==2:
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
@@ -595,22 +613,30 @@ class GameScore(ctk.CTkFrame):
                     var.set(int(var.get())+1)
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
-                    self.changeBatter()
+                    self.changeBatter(controller)
             elif var2==1 and int(var.get())==1:
                 foulOut = msgbox.askokcancel(title="Batter out", message="The current batter will become out.\nPress cancel to undo.")
                 if foulOut:
                     var.set(int(var.get())+1)
                     battersOut += 1
                     batOutText.configure(text=f"Batters Out: {battersOut}")
-                    self.changeBatter()
+                    self.changeBatter(controller)
             else:
                 var.set(int(var.get())+1)
+        elif name == "balls":
+            if int(var.get())+var2 < 4:
+                var.set(int(var.get())+1)
+            elif int(var.get())+var2 >= 4:
+                strikeOut = msgbox.askokcancel(title="Batter walk", message="The current batter will walk to next base\nPress cancel to undo.")
+                if strikeOut:
+                    var.set(int(var.get())+1)
+                    self.changeBatter(controller)
         else:
             var.set(int(var.get())+1)
 
-    def entSub(self, var, *names):
+    def entSub(self, var, *args):
         try:
-            name = names[0]
+            name = args[0]
         except:
             name = "none"
         if name == "inningNum":
@@ -620,46 +646,50 @@ class GameScore(ctk.CTkFrame):
             if int(var.get()) > 0:
                 var.set(int(var.get())-1)
 
-    def changeBatter(self):
+    def changeBatter(self, controller):
     
         index = batterEntry.cget("values").index(batterEntry.get())
-        playerCell="A1"
         if BattingTeam.get()==f"Away Team ({awayTeamName})":
             for row in range(0, 8):
                 if index==row:
-                    sheet[f"J{row+3}"] = runs.get()
-                    sheet[f"K{row+3}"] = strikes.get()
-                    sheet[f"L{row+3}"] = foulBall.get()
+                    sheet[f"J{row+3}"] = int(runs.get())
+                    sheet[f"K{row+3}"] = int(strikes.get())
+                    sheet[f"L{row+3}"] = int(foulBall.get())
                 if fieldEntry.cget("values").index(fieldEntry.get())==row:
-                    sheet[f"F{row+3}"] = balls.get()
+                    sheet[f"F{row+3}"] = int(balls.get())
         else:
             for row in range(0, 8):
                 if index==row:
-                    sheet[f"C{row+3}"] = runs.get()
-                    sheet[f"D{row+3}"] = strikes.get()
-                    sheet[f"E{row+3}"] = foulBall.get()
+                    sheet[f"C{row+3}"] = int(runs.get())
+                    sheet[f"D{row+3}"] = int(strikes.get())
+                    sheet[f"E{row+3}"] = int(foulBall.get())
                 if fieldEntry.cget("values").index(fieldEntry.get())==row:
-                    sheet[f"M{row+3}"] = balls.get()
+                    sheet[f"M{row+3}"] = int(balls.get())
+        for column in ["C", "D", "E", "F", "J", "K", "L", "M"]:
+            colTotal = 0
+            for i in range(3, 11):
+                colTotal += int(sheet[f"{column}{i}"].value)
+            sheet[f"{column}12"] = colTotal
         runs.set(0)
         strikes.set(0)
         foulBall.set(0)
         balls.set(0)
 
-        
-        global battersOut
-        if battersOut >= 3:
-            msgbox.showinfo(title="Swapping Sides", message="Teams will now swap sides.")
-            battersOut = 0
-            batOutText.configure(text=f"Batters Out: {battersOut}")
-            self.swapSides()
+        table.save(xlfile)
 
         try:
             batterEntry.set(batterEntry.cget("values")[index+1])
         except IndexError:
             batterEntry.set(batterEntry.cget("values")[0])
-    
-    def swapSides(self):
 
+        global battersOut
+        if battersOut >= 3:
+            msgbox.showinfo(title="Swapping Sides", message="Teams will now swap sides.")
+            battersOut = 0
+            batOutText.configure(text=f"Batters Out: {battersOut}")
+            self.swapSides(controller)
+    
+    def swapSides(self, controller):
         BattingTeam.configure(state="normal")
         if BattingTeam.get()==f"Away Team ({awayTeamName})":
             BattingTeam.set(f"Home Team ({homeTeamName})")
@@ -669,8 +699,39 @@ class GameScore(ctk.CTkFrame):
         global teamSwapNum
         teamSwapNum += 1
         if teamSwapNum%2==0:
-            self.entAdd(inningNum, "inningNum")
+            self.entAdd(inningNum, controller, "inningNum", None)
         self.updateTeams(batterEntry, fieldEntry)
+    
+    def earlyGameEnd(self, controller):
+        endConfirm = msgbox.askyesno(title="End Game Early?", message="Are you sure you want to end the game early?")
+        if endConfirm:
+            index = batterEntry.cget("values").index(batterEntry.get())
+            if BattingTeam.get()==f"Away Team ({awayTeamName})":
+                for row in range(0, 8):
+                    if index==row:
+                        sheet[f"J{row+3}"] = int(runs.get())
+                        sheet[f"K{row+3}"] = int(strikes.get())
+                        sheet[f"L{row+3}"] = int(foulBall.get())
+                    if fieldEntry.cget("values").index(fieldEntry.get())==row:
+                        sheet[f"F{row+3}"] = int(balls.get())
+            else:
+                for row in range(0, 8):
+                    if index==row:
+                        sheet[f"C{row+3}"] = int(runs.get())
+                        sheet[f"D{row+3}"] = int(strikes.get())
+                        sheet[f"E{row+3}"] = int(foulBall.get())
+                    if fieldEntry.cget("values").index(fieldEntry.get())==row:
+                        sheet[f"M{row+3}"] = int(balls.get())
+            for column in ["C", "D", "E", "F", "J", "K", "L", "M"]:
+                colTotal = 0
+                for i in range(3, 11):
+                    colTotal += int(sheet[f"{column}{i}"].value)
+                sheet[f"{column}12"] = colTotal
+
+            table.save(xlfile)
+
+            controller.show_frame("GameEnd")
+            GameEnd.updateWinScreen(GameEnd)
 
     def updateDevMode(self, devOptions, BattingTeam):
         if devOptions.get() == 1:
@@ -678,8 +739,7 @@ class GameScore(ctk.CTkFrame):
         else:
             BattingTeam.configure(state="disabled")
     
-    def updateTabs(self):
-        #overviewTab updates
+    def updateTable(self):
         overviewList = []
         overviewTable = list(sheet.values)
         for row in overviewTable:
@@ -696,22 +756,120 @@ class GameScore(ctk.CTkFrame):
     def updateTeams(self, batterName, fieldName):
         batOld=batText.cget("text")
         text=BattingTeam.get()
-        if batOld != text:
-            batText.configure(text=text)
-            fldText.configure(text=batOld)
-            if text == f"Home Team ({homeTeamName})":
-                batterName.configure(values=HomeMembers)
-                batterName.set(HomeMembers[0])
-                fieldName.configure(values=AwayMembers)
-                fieldName.set(AwayMembers[0])
-            else:
-                batterName.configure(values=AwayMembers)
-                batterName.set(AwayMembers[0])
-                fieldName.configure(values=HomeMembers)
-                fieldName.set(HomeMembers[0])
+        batText.configure(text=text)
+        fldText.configure(text=batOld)
+        if text == f"Home Team ({homeTeamName})":
+            batterName.configure(values=HomeMembers)
+            batterName.set(HomeMembers[0])
+            fieldName.configure(values=AwayMembers)
+            fieldName.set(AwayMembers[0])
+        else:
+            batterName.configure(values=AwayMembers)
+            batterName.set(AwayMembers[0])
+            fieldName.configure(values=HomeMembers)
+            fieldName.set(HomeMembers[0])
+
+class GameEnd(ctk.CTkFrame):
     
-    def addStats(self):
-        self.changeBatter()
+    def __init__(self, parent, controller):
+        ctk.CTkFrame.__init__(self, parent)
+        gameEndFrame = ctk.CTkFrame(self)
+        gameEndFrame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        gameEndFrame.grid_rowconfigure(0, weight=1)
+        gameEndFrame.grid_rowconfigure(1, weight=1)
+        gameEndFrame.grid_rowconfigure(2, weight=4)
+        gameEndFrame.grid_columnconfigure(0, weight=1)
+        gameEndFrame.grid_columnconfigure(1, weight=1)
+
+        global endTitle
+        endTitle = ctk.CTkLabel(gameEndFrame, text="", font=controller.fontH1)
+        endTitle.grid(row=0, column=0, columnspan=2, pady=15)
+
+        exportImgBtn = ctk.CTkButton(gameEndFrame, text="Export Game Results As Image", command=self.exportAsImg)
+        exportImgBtn.grid(row=1, column=0, padx=5, pady=15, sticky=tk.E)
+        exportImgInfo = ctk.CTkLabel(gameEndFrame, text="The excel table of game scores\nwill be exported as an image\nin the 'Game Results' folder.")
+        exportImgInfo.grid(row=1, column=1, padx=5, pady=15, sticky=tk.W)
+
+        resultsFrame = ctk.CTkFrame(gameEndFrame)
+        resultsFrame.grid(row=2, column=0, columnspan=2)
+
+        global resultsValues
+        resultsValues = []
+        for x in range(14):
+            resultsFrame.rowconfigure(x, weight=1)
+            for y in range(13):
+                resultsFrame.columnconfigure(y, weight=1)
+                if (y==1 and x==2) or (y==8 and x==2) or (y==1 and x==0):
+                    e=ctk.CTkEntry(resultsFrame,
+                                font=controller.fontB4, corner_radius=0)
+                    e.grid(row=x, column=y, sticky="nsew", columnspan=2)
+                elif (y==2 and x==2) or (y==9 and x==2) or (y==2 and x==0):
+                    pass
+                else:
+                    e=ctk.CTkEntry(resultsFrame,
+                                font=controller.fontB4, corner_radius=0)
+                    e.grid(row=x, column=y, sticky="nsew")
+                resultsValues.append(e)
+        
+        restartBtn = ctk.CTkButton(gameEndFrame, text="Back to Main Menu", command=lambda: controller.show_frame("StartScreen"))
+        restartBtn.grid(row=3, column=0, padx=5, pady=15, sticky=tk.E)
+        closeBtn = ctk.CTkButton(gameEndFrame, text="Close Program", command=self.destroyRequest)
+        closeBtn.grid(row=3, column=1, padx=5, pady=15, sticky=tk.W)
+    
+    def exportAsImg(self):  
+        excel2img.export_img(xlfile,f"Game Results/{fileTitle}.png", "", "playerScores!A1:M12")
+        msgbox.showinfo(title="Image Successfully Created", message="Excel file has been turned into an image file.")
+    
+    def destroyRequest(self):
+        close = msgbox.askyesno(title="Closing Program", message="Are you sure you want to exit the program?")
+        if close == True:
+            self.quit()
+    
+    def updateWinScreen(self):
+        table.save(xlfile)
+        
+        sheet.insert_rows(1)
+        sheet.insert_rows(1)
+
+        if sheet["C14"].value > sheet["J14"].value:
+            pointDiff = int(sheet["C14"].value) - int(sheet["J14"].value)
+            winningTeam = homeTeamName
+            winText = f"{homeTeamName} wins by {pointDiff}  "
+        elif sheet["C14"].value < sheet["J14"].value:
+            pointDiff = int(sheet["J14"].value) - int(sheet["C14"].value)
+            winningTeam = awayTeamName
+            winText = f"{awayTeamName} wins by {pointDiff}  "
+        else:
+            pointDiff = 0
+            winningTeam = "Tied"
+            winText = f"Both teams are tied"
+
+        sheet["A1"] = "Winning Team:"
+        sheet.merge_cells("B1:C1")
+        sheet["B1"] = winningTeam
+        sheet["D1"] = "Point Lead:"
+        sheet["E1"] = pointDiff
+
+        endTitle.configure(text=winText)
+
+        overviewList = []
+        overviewTable = list(sheet.values)
+        for row in overviewTable:
+            for term in row:
+                overviewList.append(term)
+
+        for cell in resultsValues:
+            index = resultsValues.index(cell)
+            cell.configure(state="normal")
+            cell.delete(0, tk.END)
+            if str(overviewList[index])!="None":
+                cell.insert(1, str(overviewList[index]))
+            else:
+                cell.insert(1, "")
+            cell.configure(state="disabled")
+        
+        table.save(xlfile)
+
 
 
 app = Win()
