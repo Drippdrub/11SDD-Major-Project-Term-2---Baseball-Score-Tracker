@@ -12,7 +12,6 @@ sheet = table.active
 sheet.title = "playerScores"
 tableTemplate = [
     ["Home Team", "", "", "", "", "", "", "Away Team"],
-    ["", "", "", "", "", "", "", ""],
     ["Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls", "", "Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls"],
     [1, "", "", "", "", "", "", 1],
     [2, "", "", "", "", "", "", 2],
@@ -23,7 +22,6 @@ tableTemplate = [
     [7, "", "", "", "", "", "", 7],
     [8, "", "", "", "", "", "", 8],
     [9, "", "", "", "", "", "", 9],
-    ["", "", "", "", "", "", "", ""],
     ["Team Total", "", "", "", "", "", "", "Team Total"],
 ]
 

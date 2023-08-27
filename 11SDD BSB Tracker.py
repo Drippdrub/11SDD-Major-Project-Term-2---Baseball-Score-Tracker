@@ -328,6 +328,9 @@ class Settings(ctk.CTkFrame):
 class GameScore(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
+        global teamSwapNum
+        teamSwapNum = 0
+
         global homeTeamName
         homeTeamName = ""
         global awayTeamName
@@ -337,6 +340,7 @@ class GameScore(ctk.CTkFrame):
         global batText
         global fldText
 
+        global inningNum
         inningNum = tk.StringVar()
         inningNum.set(1)
         inningNum.trace("w", lambda name, index, mode, inningNum=inningNum: self.innCallback(inningNum, inningOld))
@@ -347,7 +351,7 @@ class GameScore(ctk.CTkFrame):
         upArrow = ctk.CTkImage(dark_image=Image.open("Assets/up_arrow.png"), size=(10, 10))
         downArrow = ctk.CTkImage(dark_image=Image.open("Assets/down_arrow.png"), size=(10, 10))
 
-        topFrame = ctk.CTkFrame(master=self)
+        topFrame = ctk.CTkFrame(master=self)        
         topFrame.pack(padx=20, pady=10, fill=tk.X)
 
         inningLbl = ctk.CTkLabel(master=topFrame, text="Inning:", font=controller.fontB1)
@@ -366,7 +370,7 @@ class GameScore(ctk.CTkFrame):
         BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
         BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
 
-        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=850,
+        BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"],
                                       text_color_disabled="gray84")
         BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
@@ -374,7 +378,7 @@ class GameScore(ctk.CTkFrame):
 
         # devModeOn = ctk.IntVar(value=0)
         # devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
-        # devOptions.grid(row=0, column=5, rowspan=2, padx=15)
+        # devOptions.grid(row=0, column=7, rowspan=2, padx=15)
 
         tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTabs())
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
@@ -601,18 +605,45 @@ class GameScore(ctk.CTkFrame):
                 var.set(int(var.get())-1)
 
     def changeBatter(self):
+        index = batterEntry.cget("values").index(batterEntry.get())
+        playerCell="A1"
+        if BattingTeam.get()==f"Away Team ({awayTeamName})":
+            for row in range(0, 8):
+                if index==row:
+                    sheet[f"J{row+3}"] = runs.get()
+                    sheet[f"K{row+3}"] = strikes.get()
+                    sheet[f"L{row+3}"] = foulBall.get()
+                if fieldEntry.cget("values").index(fieldEntry.get())==row:
+                    sheet[f"F{row+3}"] = balls.get()
+        else:
+            for row in range(0, 8):
+                if index==row:
+                    sheet[f"C{row+3}"] = runs.get()
+                    sheet[f"D{row+3}"] = strikes.get()
+                    sheet[f"E{row+3}"] = foulBall.get()
+                if fieldEntry.cget("values").index(fieldEntry.get())==row:
+                    sheet[f"M{row+3}"] = balls.get()
+        runs.set(0)
+        strikes.set(0)
+        foulBall.set(0)
+        balls.set(0)
         try:
-            batterEntry.set(batterEntry.cget("values")[batterEntry.cget("values").index(batterEntry.get())+1])
-            runs.set(0)
-            strikes.set(0)
-            foulBall.set(0)
-            balls.set(0)
-
+            batterEntry.set(batterEntry.cget("values")[index+1])
         except IndexError:
             self.swapSides()
     
-    def swapSides():
-        pass
+    def swapSides(self):
+        BattingTeam.configure(state="normal")
+        if BattingTeam.get()==f"Away Team ({awayTeamName})":
+            BattingTeam.set(f"Home Team ({homeTeamName})")
+        else:
+            BattingTeam.set(f"Away Team ({awayTeamName})")
+        BattingTeam.configure(state="disabled")
+        global teamSwapNum
+        teamSwapNum += 1
+        if teamSwapNum%2==0:
+            self.entAdd(inningNum, "inningNum")
+        self.updateTeams(batterEntry, fieldEntry)
 
     def updateDevMode(self, devOptions, BattingTeam):
         if devOptions.get() == 1:
@@ -653,7 +684,7 @@ class GameScore(ctk.CTkFrame):
                 fieldName.set(HomeMembers[0])
     
     def addStats(self):
-        pass
+        self.changeBatter()
 
 
 app = Win()
