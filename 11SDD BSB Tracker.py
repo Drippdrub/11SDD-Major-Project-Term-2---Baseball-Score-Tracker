@@ -9,6 +9,11 @@ import xlsxwriter as xl
 import openpyxl as openpx
 # Excel To Image Converter
 import excel2img
+# OS
+import os
+
+if os.path.exists("./Game Results")==False:
+    os.mkdir("./Game Results")
 
 # ctypes used solely for the purpose of imp[orting custom fonts
 try:
