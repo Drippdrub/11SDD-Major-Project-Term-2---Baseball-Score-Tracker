@@ -13,10 +13,10 @@ import excel2img
 import os
 import sys
 
-if os.path.exists("./Game Results")==False:
+if os.path.exists("./Game Results")==False: #creates 'Game Results' folder if it does not exist in the same directory as the program
     os.mkdir("./Game Results")
 
-def resource_path(relative_path):
+def resource_path(relative_path): #to access resource files as a --onefile
     """ Get absolute path to resource, works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
@@ -26,7 +26,7 @@ def resource_path(relative_path):
 
     return os.path.join(base_path, relative_path)
 
-# ctypes used solely for the purpose of imp[orting custom fonts
+# ctypes used solely for the purpose of importing custom fonts
 try:
     from ctypes import windll, byref, create_unicode_buffer, create_string_buffer
     FR_PRIVATE  = 0x10
@@ -61,11 +61,11 @@ def loadfont(fontpath, private=True, enumerable=False):
 class Win(ctk.CTk): 
 
     def __init__(self, *args, **kwargs):
-        ctk.CTk.__init__(self, *args, **kwargs)
+        ctk.CTk.__init__(self, *args, **kwargs) #initialise window
         self.geometry("1280x720")
         self.resizable(False, False) #fixed window size
         self.iconbitmap(resource_path("ball_icon.ico")) #application icon
-        self.title("Baseball Scoring System") #window name
+        self.title("Baseball/Softball Score Tracker") #window name
         #function allows custom fonts to be used
         loadfont(resource_path("Airstrike Academy.ttf"))
         loadfont(resource_path("Venus Plant.ttf"))
@@ -107,11 +107,11 @@ class Win(ctk.CTk):
 class StartScreen(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
-        ctk.CTkFrame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent) #initialise frame
         self.controller = controller
         MMFrame = ctk.CTkFrame(self, fg_color=bgClr) #menu frame with Title and Menu Buttons (to the left of Main Menu Screen)
         # title
-        MMTitle = ctk.CTkLabel(MMFrame, text="BASEBALL\nSTAT\nTRACKER", font=controller.fontH1, bg_color=bgClr)
+        MMTitle = ctk.CTkLabel(MMFrame, text="BASEBALL\nAND SOFTBALL\nSCORE\nTRACKER", font=controller.fontH1, bg_color=bgClr)
         MMTitle.pack(padx=30, pady=30)
         # start button
         MMStart = ctk.CTkButton(MMFrame, height=75, width=375, corner_radius=40, font=controller.fontH2,
@@ -138,7 +138,7 @@ class StartScreen(ctk.CTkFrame):
 # Team Lineup Input Screen Class
 class Lineups(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        ctk.CTkFrame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent) #initialise frame
         self.controller = controller
         global HomeEntries #list of Home Team Player Entry Widgets, used to retrieve Player Names
         HomeEntries = []
@@ -151,153 +151,177 @@ class Lineups(ctk.CTkFrame):
         tLT2 = ctk.CTkFrame(self, fg_color=bgClr) #Frame, packs Away Team Entries to the right side of the screen
         tLMid = ctk.CTkFrame(self, fg_color=bgClr) #Frame, separates the left and right sides of the screen, has change screen button
 
-        tLT1.columnconfigure(0, weight=1) #
+        tLT1.columnconfigure(0, weight=1) #Evenly weighted columns in .grid(), even distribution of cells
         tLT1.columnconfigure(1, weight=1)
         tLT1.columnconfigure(2, weight=1)
 
-        T1Text = ctk.CTkLabel(tLT1, text="Home Team", font=controller.fontH2)
+        T1Text = ctk.CTkLabel(tLT1, text="Home Team", font=controller.fontH2) #Left side, title for home team frame
         T1Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
                     pady=10)
-        T2Text = ctk.CTkLabel(tLT2, text="Away Team", font=controller.fontH2)
+        T2Text = ctk.CTkLabel(tLT2, text="Away Team", font=controller.fontH2) #Right side, title for away team frame
         T2Text.grid(row=0, column=0, columnspan=3, sticky=tk.W+tk.E,
                     pady=10)
 
 
-        Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=controller.fontB2)
+        Name1Lbl = ctk.CTkLabel(tLT1, text="Team Name:", font=controller.fontB2) #Left side, label for home team name entry
         Name1Lbl.grid(row=1, column=0, sticky=tk.E,
                     padx=10, pady=10)
-        Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="Home Team", font=controller.fontB1, height=40)
+        Name1Ent = ctk.CTkEntry(tLT1, placeholder_text="Home Team", font=controller.fontB1, height=40) #Left side, entry for home team name
         Name1Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
                     padx=40, pady=10)
-        for i in range(9):
-            PlayerName = ctk.CTkLabel(tLT1, text=f"Player {i+1} Name:", font=controller.fontB2)
+        for i in range(9): #nine players on home team
+            PlayerName = ctk.CTkLabel(tLT1, text=f"Player {i+1} Name:", font=controller.fontB2) #Left side, label for player name entries
             PlayerName.grid(row=i+2, column=0, sticky=tk.E,
                             padx=10, pady=10)
-            P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40)
+            P1NameEnt = ctk.CTkEntry(tLT1, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40) #Left side, entry for player names
             P1NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                         padx=40, pady=10)
-            HomeEntries.append(P1NameEnt)
+            HomeEntries.append(P1NameEnt) #Add player name entry widgets to a list to grab values
 
-        tLT2.columnconfigure(0, weight=1)
+        tLT2.columnconfigure(0, weight=1) #Evenly weighted columns in .grid(), even distribution of cells
         tLT2.columnconfigure(1, weight=1)
         tLT2.columnconfigure(2, weight=1)
 
-        Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=controller.fontB2)
+        Name2Lbl = ctk.CTkLabel(tLT2, text="Team Name:", font=controller.fontB2) #Right side, label for away team name entry
         Name2Lbl.grid(row=1, column=0, sticky=tk.E,
                     padx=10, pady=10)
-        Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="Away Team", font=controller.fontB1, height=40)
+        Name2Ent = ctk.CTkEntry(tLT2, placeholder_text="Away Team", font=controller.fontB1, height=40) #Right side, entry for away team name
         Name2Ent.grid(row=1, column=1, columnspan=2, sticky=tk.W+tk.E,
                     padx=40, pady=10)
-        for i in range(9):
-            PlayerName = ctk.CTkLabel(tLT2, text=f"Player {i+1} Name:", font=controller.fontB2)
+        for i in range(9): #nine players on away team
+            PlayerName = ctk.CTkLabel(tLT2, text=f"Player {i+1} Name:", font=controller.fontB2) #Right side, label for player name entries
             PlayerName.grid(row=i+2, column=0, sticky=tk.E,
                             padx=10, pady=10)
-            P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40)
+            P2NameEnt = ctk.CTkEntry(tLT2, placeholder_text=f"Player {i+1}", font=controller.fontB1, height=40) #Right side, entry for player names
             P2NameEnt.grid(row=i+2, column=1, columnspan=2, sticky=tk.W+tk.E,
                         padx=40, pady=10)
-            AwayEntries.append(P2NameEnt)
+            AwayEntries.append(P2NameEnt) #Add player name entry widgets to a list to grab values
 
 
 
-        tLT1.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True)
-        tLT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True)
+        tLT1.pack(padx=10, side=tk.LEFT, fill=tk.BOTH, expand=True) #pack home team entries to left side
+        tLT2.pack(padx=10, side=tk.RIGHT, fill=tk.BOTH, expand=True) #pack away team entries to right side
 
         tLText = ctk.CTkLabel(tLMid, text="Make sure the players have been ordered into batting order",
-                                font=controller.fontB1, wraplength=300, justify=tk.CENTER)
-        tLStartGame = ctk.CTkButton(tLMid, text="Start", command=lambda: self.proceedRequest(controller))
+                                font=controller.fontB1, wraplength=300, justify=tk.CENTER) #Middle of screen, label to remind users to order players in batting order
+        tLStartGame = ctk.CTkButton(tLMid, text="Start", command=lambda: self.proceedRequest(controller)) #Middle of screen, button to move to settings
 
-        tLText.pack(pady=15, anchor=tk.CENTER)
-        tLStartGame.pack(pady=30, anchor=tk.CENTER)
+        tLText.pack(pady=15, anchor=tk.CENTER) #pack to center
+        tLStartGame.pack(pady=30, anchor=tk.CENTER) #pack to center
         self.update()
-        tLMid.pack(pady=700/2-200, anchor=tk.CENTER)
+        tLMid.pack(pady=700/2-200, anchor=tk.CENTER) #Middle frame is in the center of the screen
 
     def proceedRequest(self, controller):
-        self.controller = controller
+        self.controller = controller #controller is the controller of __init__ function, Win() class
+        #confirm with user that input choices are correct
         proceed = msgbox.askokcancel(title="Confirm Action", message="Do you wish to proceed?\n\nTeam batting orders cannot be changed from this point onward.")
+        #if user confirms
         if proceed:
             global HomeMembers
             HomeMembers = []
             for entry in HomeEntries:
-                HomeMembers.append(entry.get())
+                HomeMembers.append(entry.get()) #grabs values from home team player name entries, and adds to list
             global AwayMembers
             AwayMembers = []
             for entry in AwayEntries:
-                AwayMembers.append(entry.get())
+                AwayMembers.append(entry.get()) #grabs values from away team player name entries, and adds to list
             global HomeName
-            HomeName = Name1Ent.get()
+            HomeName = Name1Ent.get() #grabs home team name
             global AwayName
-            AwayName = Name2Ent.get()
+            AwayName = Name2Ent.get() #grabs home team name
             if HomeName=="" or AwayName=="":
+                #check if team names have been entered
                 msgbox.showerror(title="Error",
                                      message="The Team Name entry fields are empty.\nPlease check that all fields have been filled in.")
                 return
             for member in HomeMembers:
                 if member=="":
+                    #check if home team player names have been entered
                     msgbox.showerror(title="Error",
                                      message="One or more entry fields under Team 1 are empty.\nPlease check that all fields have been filled in.")
                     return
             for member in AwayMembers:
                 if member=="":
+                    #check if away team player names have been entered
                     msgbox.showerror(title="Error",
                                      message="One or more entry fields under Team 2 are empty.\nPlease check that all fields have been filled in.")
                     return
+            #swap frame to Settings() class
             controller.show_frame("Settings")
 
+#Settings frame class
 class Settings(ctk.CTkFrame):
     
     def __init__(self, parent, controller):
-        ctk.CTkFrame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent) #initialise frame
+        #second frame, with padding
         settingFrame = ctk.CTkFrame(self)
 
+        #variable for filename of excel spreadsheet
         fileName = tk.StringVar()
 
-        fileNameLbl = ctk.CTkLabel(settingFrame, text="Excel File Name:")
-        fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName)
+        fileNameLbl = ctk.CTkLabel(settingFrame, text="Excel File Name:") #label from file name entry
+        fileNameEnt = ctk.CTkEntry(settingFrame, textvariable=fileName) #entry for file name var
         fileNameLbl.grid(row=0, column=0, padx=10, pady=10)
         fileNameEnt.grid(row=0, column=1, padx=10, pady=10)
+        #label to tell users about exported excel spreadsheet
         fileInfoLbl = ctk.CTkLabel(self, text="Game results will be automatically\noutput to an excel worksheet in\nthe 'Game Results' folder.")
         fileInfoLbl.place(relx=0.75, rely=0.45)
 
-        global gameLength
-        gameLengthLbl = ctk.CTkLabel(settingFrame, text="Select A Game Length:")
+        gameLengthLbl = ctk.CTkLabel(settingFrame, text="Select A Game Length:") #label for game length buttons
         gameLengthLbl.grid(row=1, column=0, columnspan=2, padx=10, pady=10)
 
+        #variable for length (in innings) of the baseball/softball game
+        global gameLength
         gameLength = tk.IntVar(value=0)
-        Int7Btn = ctk.CTkRadioButton(settingFrame, text="Softball Game (7 Innings)", variable= gameLength, value=7)
-        Int9Btn = ctk.CTkRadioButton(settingFrame, text="Baseball Game (9 Innings)", variable= gameLength, value=9)
+        Int7Btn = ctk.CTkRadioButton(settingFrame, text="Softball Game (7 Innings)", variable= gameLength, value=7) #Radio button for 7 innings
+        Int9Btn = ctk.CTkRadioButton(settingFrame, text="Baseball Game (9 Innings)", variable= gameLength, value=9) #Radio button for 9 innings
         Int7Btn.grid(row=2, column=0, padx=10, pady=10)
         Int9Btn.grid(row=2, column=1, padx=10, pady=10)
 
+        #button to proceed to next screen (GameScore() frame)
         settingButton = ctk.CTkButton(settingFrame, text="Proceed", command=lambda: self.openGamescore(controller, fileNameEnt.get()))
         settingButton.grid(row=3, column=0, columnspan=2, padx=10, pady=10)
         settingFrame.pack(expand=True, anchor=tk.CENTER)
     
     def openGamescore(self, controller, fileName):
         if fileName=="":
+            #check if a file name has been given
             msgbox.showerror(title="Error",
                                      message="An excel filename has not been selected.\nPlease check you have given a filename.")
             return
         if gameLength.get()==0:
+            #check if a gameLength is selected, default value of gameLength is 0
             return
 
+        #xlfile - path of excel spreadsheet
         global xlfile
+        #fileTitle - fileName of excel spreadsheet
         global fileTitle
         fileTitle = fileName
         xlfile = f"Game Results/{fileName}.xlsx"
+
+        #create the file with xlsxwriter
         bsbTrack = xl.Workbook(xlfile)
         playerScores = bsbTrack.add_worksheet()
+        #close the file with xlsxwriter
         bsbTrack.close()
 
+        #table - excel workbook
         global table
+        #sheet - excel worksheet inside workbook
         global sheet
 
         table = openpx.load_workbook(xlfile)
         sheet = table.active
+        #rename excel worksheet to 'playerScores'
         sheet.title = "playerScores"
 
+        #change column width of columns in excel spreadsheet
         for column in ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M"]:
             sheet.column_dimensions[column].width = 15
 
+        #template for excel spreadsheet layout
         tableTemplate = [
             ["Home Team", HomeName, "", "", "", "", "", "Away Team", AwayName, "", "", "", ""],
             ["Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls", "", "Player ID", "Player Name", "Runs", "Strikes", "Foul Balls", "Balls"],
@@ -312,35 +336,47 @@ class Settings(ctk.CTkFrame):
             [9, "", 0, 0, 0, 0, "", 9, "", 0, 0, 0, 0],
             ["Team Total", "", "", "", "", "", "", "Team Total", "", "", "", "", ""],
         ]
+
+        #add template to excel spreadsheet
         for row in tableTemplate:
             sheet.append(row)
 
+        #add home team player names to excel spreadsheet
         for player in HomeMembers:
             index = HomeMembers.index(player)
             cell = f"B{index+3}"
             sheet[cell] = player
         
+        #add away team player names to excel spreadsheet
         for player in AwayMembers:
             index = AwayMembers.index(player)
             cell = f"I{index+3}"
             sheet[cell] = player
 
+        #save excel spreadsheet
         table.save(xlfile)
 
+        #switch screen to GameScore() class
         controller.show_frame("GameScore")
 
+        #update values in GameScore() class
         global homeTeamName
-        homeTeamName = HomeName
+        homeTeamName = HomeName #different variable, same purpose
         global awayTeamName
-        awayTeamName = AwayName
+        awayTeamName = AwayName #different variable, same purpose
 
+        #update widgets in GameScore() class
+        #send home and away team names to BattingTeam widget, set value to away team
         BattingTeam.configure(values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"], width=200)
         BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.configure(state="disabled") #setting value of comboBox while disabled will not work
+        #display away team as batting first, home team as fielding first
         batText.configure(text=f"Away Team ({awayTeamName})")
         fldText.configure(text=f"Home Team ({homeTeamName})")
+        #list of batters updated
         batterEntry.configure(values=AwayMembers)
         batterEntry.set(AwayMembers[0])
+        #list of pitchers updated
         fieldEntry.configure(values=HomeMembers)
         fieldEntry.set(HomeMembers[0])
 
@@ -349,64 +385,79 @@ class Settings(ctk.CTkFrame):
 class GameScore(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
+        #number of times teams have swapped sides, value is even when away team is batting, odd when home team is batting
         global teamSwapNum
         teamSwapNum = 0
 
+        #set home and away team names to default values (this is run on program start/initialisation, set to proper value later)
         global homeTeamName
         homeTeamName = ""
         global awayTeamName
         awayTeamName = ""
 
+        #globalising certain widgets to be set and grabbed by other functions
         global BattingTeam
         global batText
         global fldText
 
+        #inningNum - current inning of game
         global inningNum
         inningNum = tk.StringVar()
         inningNum.set(1)
+        #trace values of innings in ent, change value to old value if a non-number character is entered
         inningNum.trace("w", lambda name, index, mode, inningNum=inningNum: self.innCallback(inningNum, inningOld))
-        inningOld = ""
+        inningOld = inningNum
         
-        ctk.CTkFrame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent) #initialise frame
         self.controller = controller
-        upArrow = ctk.CTkImage(dark_image=Image.open(resource_path("up_arrow.png")), size=(10, 10))
-        downArrow = ctk.CTkImage(dark_image=Image.open(resource_path("down_arrow.png")), size=(10, 10))
+        upArrow = ctk.CTkImage(dark_image=Image.open(resource_path("up_arrow.png")), size=(10, 10)) #image of up arrow
+        downArrow = ctk.CTkImage(dark_image=Image.open(resource_path("down_arrow.png")), size=(10, 10)) #image of down arrow
 
-        topFrame = ctk.CTkFrame(master=self)        
+        topFrame = ctk.CTkFrame(master=self) #frame at the top of GameScore screen
         topFrame.pack(padx=20, pady=10, fill=tk.X)
 
+        #label of inning entry
         inningLbl = ctk.CTkLabel(master=topFrame, text="Inning:", font=controller.fontB1)
         inningLbl.grid(row=0, column=0, rowspan=2, padx=5)
+        #entry of inningNum var
         inningEnt = ctk.CTkEntry(master=topFrame, font=controller.fontB1, height=40, textvariable=inningNum)
         inningEnt.grid(row=0, column=1, rowspan=2)
+        #button to increase inningNum by 1
         inningUp = ctk.CTkButton(master=topFrame, image=upArrow, text="", 
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entAdd(inningNum, controller, "inningNum"))
+        #button to decrease inningNum by 1
         inningDown = ctk.CTkButton(master=topFrame, image=downArrow, text="",
                                 width=10, height=10, fg_color="#ababab",
                                 command=lambda: self.entSub(inningNum, "inningNum"))
         inningUp.grid(row=0, column=2, padx=4, pady=2)
         inningDown.grid(row=1, column=2, pady=2)
 
+        #label for current batting team
         BattingTeamLbl = ctk.CTkLabel(topFrame, text="Current Batting Team: ")
         BattingTeamLbl.grid(row=0, column=3, rowspan=2, padx=15)
 
+        #dropdown menu for current battingteam, dropdown function is disabled but was used during testing
         BattingTeam = ctk.CTkComboBox(topFrame, values=[f"Home Team ({homeTeamName})", f"Away Team ({awayTeamName})"],
                                       text_color_disabled="gray84")
+        #set away team to bat first
         BattingTeam.set(f"Away Team ({awayTeamName})")
         BattingTeam.grid(row=0, column=4, rowspan=2, padx=5)
+        #add command for button press
         BattingTeam.configure(command=lambda e: self.updateTeams(batterEntry, fieldEntry))
 
+        #re-enables batting team dropdown menu for testing purposes
         devModeOn = ctk.IntVar(value=0)
         devOptions = ctk.CTkCheckBox(topFrame, text="Enable DevMode?", command=lambda: self.updateDevMode(devOptions, BattingTeam), variable=devModeOn, onvalue=1, offvalue=0)
+        #disabled packing this checkbox
         # devOptions.grid(row=0, column=7, rowspan=2, padx=15)
 
         tabview = ctk.CTkTabview(master=self, command=lambda: self.updateTable())
         tabview.pack(padx=20, pady=5, expand=True, fill=tk.BOTH)
 
-        allTab = tabview.add("All")
+        allTab = tabview.add("Game Scores")
         overviewTab = tabview.add("Game Overview")
-        tabview.set("All")
+        tabview.set("Game Scores")
 
         allTab.grid_columnconfigure(0, weight=1)
         allTab.grid_columnconfigure(1, weight=1)
@@ -581,7 +632,7 @@ class GameScore(ctk.CTkFrame):
         
     
     def innCallback(self, sv, old):
-        if sv.get().isdigit() or sv.get == "":
+        if sv.get().isdigit():
             old = sv.get()
         else:
             sv.set(old)
@@ -605,6 +656,12 @@ class GameScore(ctk.CTkFrame):
         if name == "inningNum":
             if int(var.get()) < gameLength.get():
                 var.set(int(var.get())+1)
+                global teamSwapNum
+                if BattingTeam.get()==f"Away Team ({awayTeamName})":
+                    teamSwapNum = (2*int(var.get())) - 2
+                else:
+                    teamSwapNum = (2*int(var.get())) - 1
+
             elif int(var.get()) >= gameLength.get():
                 endGame = msgbox.askyesno(title="Finishing Game", message="Do you wish to proceed?\n\nThis will end the game, or move the game into overtime.")
                 if endGame:
@@ -671,7 +728,7 @@ class GameScore(ctk.CTkFrame):
     
         index = batterEntry.cget("values").index(batterEntry.get())
         if BattingTeam.get()==f"Away Team ({awayTeamName})":
-            for row in range(0, 8):
+            for row in range(0, 9):
                 if index==row:
                     sheet[f"J{row+3}"] = int(runs.get())
                     sheet[f"K{row+3}"] = int(strikes.get())
@@ -679,7 +736,7 @@ class GameScore(ctk.CTkFrame):
                 if fieldEntry.cget("values").index(fieldEntry.get())==row:
                     sheet[f"F{row+3}"] = int(balls.get())
         else:
-            for row in range(0, 8):
+            for row in range(0, 9):
                 if index==row:
                     sheet[f"C{row+3}"] = int(runs.get())
                     sheet[f"D{row+3}"] = int(strikes.get())
